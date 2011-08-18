@@ -45,10 +45,17 @@ public abstract class ListDetailsFragment<T> extends Fragment
 
 	protected abstract int getRefreshRate(); 
 	protected abstract int getResourceViewId(); 
+	protected abstract int getResourceItemId();
+
 	protected abstract void setupDetails(View v);
 	protected abstract void updateDetails(View v, T item);
 	protected abstract void updateItem(View v, T item);
-	protected abstract ArrayList<T> fetchItems(SabControl sab);
+	protected abstract List<T> fetchItems(SabControl sab);
+
+	protected SabControl getSab()
+	{
+		return sab;
+	}
 
 	@Override public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle state)
 	{
@@ -83,29 +90,51 @@ public abstract class ListDetailsFragment<T> extends Fragment
 		if(state != null)
 		{
 			listView.setSelection(state.getInt("item_selected"));
-			updateDetailsInternal(currentItem());
+			updateDetailsInternal(getCurrentItem());
+		}
+	}
+
+	@Override public void onHiddenChanged(boolean hidden)
+	{
+		super.onHiddenChanged(hidden);
+		if(hidden)
+		{
+			Log.v(TAG, "onHidden(" + getClass().getName() + "), pausing");
+			paused = true;
+		}
+		else
+		{
+			Log.v(TAG, "onHidden(" + getClass().getName() + "), resuming");
+			paused = false;
+			handler.post(updateListTask);
 		}
 	}
 
 	@Override public void onPause()
 	{
 		super.onPause();
-		Log.v(TAG, "onPause()");
+		Log.v(TAG, "onPause(" + getClass().getName() + ")");
 		paused = true;
 	}
 
 	@Override public void onResume()
 	{
 		super.onResume();
-		Log.v(TAG, "onResume()");
-		paused = false;
-		handler.post(updateListTask);
+		Log.v(TAG, "onResume(" + getClass().getName() + ")");
+
+		//if we get a resume (like a return from the settings activity, but we are hidden, we want to stay
+		//	paused
+		if(!isHidden())
+		{
+			paused = false;
+			handler.post(updateListTask);
+		}
 	}
 
 	@Override public void onDestroy()
 	{
 		super.onDestroy();
-		Log.v(TAG, "onDestroy()");
+		Log.v(TAG, "onDestroy(" + getClass().getName() + ")");
 		handler.removeCallbacks(updateListTask);
 	}
 
@@ -115,7 +144,7 @@ public abstract class ListDetailsFragment<T> extends Fragment
 		outState.putInt("item_selected", listView.getCheckedItemPosition());
 	}
 
-	private T currentItem()
+	protected T getCurrentItem()
 	{
 		int index = listView.getCheckedItemPosition();
 
@@ -156,14 +185,32 @@ public abstract class ListDetailsFragment<T> extends Fragment
 				updateDetailsInternal(item);
 			}
 		});
+
+		initList(listView);
+	}
+
+	protected void initList(ListView lv)
+	{
+	}
+
+	public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo)
+	{
+		AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo)menuInfo;
+		T item = (T)listView.getItemAtPosition(info.position);
+		onContextMenuForItem(menu, item);
+	}
+
+	protected void onContextMenuForItem(ContextMenu menu, T item)
+	{
 	}
 
 	private void updateDetailsInternal(T item)
 	{
 		if(paused || item == null)
 			return;
-		else
-			updateDetails(detailsFrame, item);
+
+		updateDetails(detailsFrame, item);
+		detailsFrame.setVisibility(View.VISIBLE);
 	}
 
 	//start the download task and re-ping ourselves for continual updates
@@ -180,9 +227,9 @@ public abstract class ListDetailsFragment<T> extends Fragment
 
 	private class ItemAdapter extends ArrayAdapter<T>
 	{
-		public ItemAdapter(Context context, ArrayList<T> items)
+		public ItemAdapter(Context context, List<T> items)
 		{
-			super(context, R.layout.queue_item, items);
+			super(context, getResourceItemId(), items);
 		}
 
 		@Override public View getView(int position, View convertView, ViewGroup parent)
@@ -191,7 +238,7 @@ public abstract class ListDetailsFragment<T> extends Fragment
 			T item = getItem(position);
 
 			if(null == convertView)
-				row = inflater.inflate(R.layout.queue_item, null);
+				row = inflater.inflate(getResourceItemId(), null);
 			else
 				row = convertView;
 
@@ -200,9 +247,9 @@ public abstract class ListDetailsFragment<T> extends Fragment
 		}
 	}
 
-	private class UpdateListTask extends AsyncTask<Void, Void, ArrayList<T>>
+	private class UpdateListTask extends AsyncTask<Void, Void, List<T>>
 	{
-		protected ArrayList<T> doInBackground(Void... unused)
+		protected List<T> doInBackground(Void... unused)
 		{
 			return fetchItems(sab);
 		}
@@ -212,12 +259,12 @@ public abstract class ListDetailsFragment<T> extends Fragment
 			listProgress.setVisibility(View.VISIBLE);
 		}
 
-		protected void onPostExecute(ArrayList<T> result)
+		protected void onPostExecute(List<T> result)
 		{
 			if(result != null)
 			{
 				//store the items
-				items = result;
+				items = new ArrayList<T>(result);
 
 				//reload the list
 				listAdapter.clear();
@@ -225,7 +272,7 @@ public abstract class ListDetailsFragment<T> extends Fragment
 				listAdapter.notifyDataSetChanged();
 
 				//update details if we have a selected item
-				T item = currentItem();
+				T item = getCurrentItem();
 				if(item != null) updateDetailsInternal(item);
 			}
 

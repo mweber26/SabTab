@@ -222,7 +222,7 @@ public class SabTabActivity extends Activity
 	{
 		protected Queue doInBackground(Void... unused)
 		{
-			Log.v(TAG, "downloadQueue");
+			Log.v(TAG, "download sab status");
 			return sab.fetchQueue(0, 1);
 		}
 
@@ -259,12 +259,16 @@ public class SabTabActivity extends Activity
 				Log.v(TAG, "  adding to transaction");
 				ft.add(R.id.fragment_content, mFragment, tag);
 			}
+			else
+			{
+				ft.show(mFragment);
+			}
 		}
 
 		public void onTabUnselected(ActionBar.Tab tab, FragmentTransaction ft)
 		{
 			Log.v(TAG, "onTabUnselected(" + mFragment.getClass().getName() + ", " + tag + ")");
-			ft.remove(mFragment);
+			ft.hide(mFragment);
 		}
 
 		public void onTabReselected(ActionBar.Tab tab, FragmentTransaction ft)

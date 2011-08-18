@@ -38,8 +38,6 @@ public class SabControl
 
 	public Queue fetchQueue(int offset, int count)
 	{
-		Log.v(TAG, "fetchQueue");
-
 		try
 		{
 			String connUrl = url + "&start=" + offset + "&limit=" + count + "&mode=queue&output=json";
@@ -54,8 +52,6 @@ public class SabControl
 
 			JSONObject queue = new JSONObject(json).getJSONObject("queue");
 			Queue ret = new Queue(queue);
-
-			Log.v(TAG, "fetchQueue done");
 			return ret;
 		} catch(Exception e) {
 			e.printStackTrace();
@@ -65,7 +61,6 @@ public class SabControl
 
 	public List<HistoryItem> fetchHistory(int offset, int count)
 	{
-		Log.v(TAG, "fetchHistory");
 		ArrayList<HistoryItem> ret = new ArrayList<HistoryItem>();
 
 		try
@@ -89,7 +84,6 @@ public class SabControl
 				ret.add(new HistoryItem(slot));
 			}
 
-			Log.v(TAG, "fetchHistory done");
 			return ret;
 		} catch(Exception e) {
 			e.printStackTrace();
@@ -99,7 +93,6 @@ public class SabControl
 
 	public List<WarningItem> fetchWarnings()
 	{
-		Log.v(TAG, "fetchWarning");
 		ArrayList<WarningItem> ret = new ArrayList<WarningItem>();
 
 		try
@@ -176,6 +169,7 @@ public class SabControl
 
 	public void pauseSlot(final QueueItem item)
 	{
+		if(item == null) return;
 		Log.v(TAG, "pauseSlot(" + item.getId() + ")");
 
 		AsyncTask<Void, Void, Void> task = new AsyncTask<Void, Void, Void>() {
@@ -190,6 +184,7 @@ public class SabControl
 
 	public void resumeSlot(final QueueItem item)
 	{
+		if(item == null) return;
 		Log.v(TAG, "resumeSlot(" + item.getId() + ")");
 
 		AsyncTask<Void, Void, Void> task = new AsyncTask<Void, Void, Void>() {
