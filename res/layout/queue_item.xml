@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+		android:id="@android:id/content"
+		android:layout_width="fill_parent"
+		android:layout_height="wrap_content"
+		android:padding="10dp"
+		android:background="?android:attr/activatedBackgroundIndicator"
+	>
+
+	<LinearLayout
+		android:orientation="vertical"
+		android:layout_width="fill_parent"
+		android:layout_height="wrap_content"
+	>
+		<LinearLayout
+			android:layout_width="fill_parent"
+			android:layout_height="wrap_content"
+		>
+   		<TextView
+				android:id="@+id/queue_status"
+				android:layout_width="0dp"
+				android:layout_weight="1"
+				android:layout_height="wrap_content"
+				android:gravity="center_vertical|left"
+				android:textStyle="bold"
+			/>
+
+			<ProgressBar
+				android:id="@+id/queue_progress"
+				style="?android:attr/progressBarStyleHorizontal"
+				android:layout_width="0dp"
+				android:layout_weight="1"
+				android:layout_height="8dp"
+				android:gravity="center_vertical|right"
+				android:indeterminate="false"
+			/>
+		</LinearLayout>
+
+   	<TextView
+			android:id="@+id/queue_name"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:singleLine="true"
+			android:ellipsize="end"
+		/>
+
+		<LinearLayout
+			android:layout_width="fill_parent"
+			android:layout_height="wrap_content"
+			android:stretchColumns="*"
+		>
+  			<TextView
+				android:id="@+id/queue_stats"
+				android:layout_width="0dp"
+				android:layout_weight="1"
+				android:layout_height="wrap_content"
+				android:singleLine="true"
+				android:gravity="center_vertical|left"
+			/>
+
+  			<TextView
+				android:id="@+id/queue_time"
+				android:layout_width="0dp"
+				android:layout_weight="1"
+				android:layout_height="wrap_content"
+				android:singleLine="true"
+				android:gravity="center_vertical|right"
+			/>
+		</LinearLayout>
+	</LinearLayout>
+</RelativeLayout>

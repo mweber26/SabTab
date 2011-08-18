@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+	<string name="app_name">SABTab</string>
+
+	<string name="header_idle">Idle</string>
+	<string name="header_paused">Paused</string>
+	<string name="header_running">Running</string>
+	<string name="header_connecting">Connecting</string>
+
+	<string name="tab_queue">Queue</string>
+	<string name="tab_history">History</string>
+	<string name="tab_settings">Settings</string>
+	<string name="tab_status">Status</string>
+
+	<string name="menu_pause">Pause queue</string>
+	<string name="menu_resume">Resume queue</string>
+
+	<string name="history_list_retry">Retry</string>
+	<string name="history_list_delete">Delete</string>
+
+	<string name="queue_list_pause">Pause</string>
+	<string name="queue_list_resume">Resume</string>
+	<string name="queue_list_move">Move</string>
+	<string name="queue_list_delete">Delete</string>
+	<string name="queue_list_change_priority">Change priority</string>
+	<string name="queue_list_change_script">Change script</string>
+	<string name="queue_list_change_category">Change category</string>
+
+	<string name="priority_force">Force</string>
+	<string name="priority_high">High</string>
+	<string name="priority_normal">Normal</string>
+	<string name="priority_low">Low</string>
+
+	<string name="unpack1">Download</string>
+   <string name="unpack2">Download+Repair</string>
+   <string name="unpack3">Download+Repair+Unpack</string>
+   <string name="unpack4">Download+Repair+Unpack+Delete</string>
+</resources>
