@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+	<PreferenceCategory android:title="@string/pref_sabtab_category">
+		<EditTextPreference
+			android:key="sabserver"
+			android:title="@string/pref_sabserver_title"
+			android:inputType="textUri"
+		/>
+
+		<EditTextPreference
+			android:key="sabapikey"
+			android:title="@string/pref_sabapikey_title"
+		/>
+	</PreferenceCategory>
+</PreferenceScreen>

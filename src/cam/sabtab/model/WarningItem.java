@@ -24,10 +24,6 @@ public class WarningItem
 		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss,SSS");
 		String[] vals = line.split("\n");
 
-		Log.v("SabControl", "vals[0] = " + vals[0]);
-		Log.v("SabControl", "vals[1] = " + vals[1]);
-		Log.v("SabControl", "vals[2] = " + vals[2]);
-
 		this.date = formatter.parse(vals[0]);
 		this.level = vals[1];
 		this.text = vals[2];

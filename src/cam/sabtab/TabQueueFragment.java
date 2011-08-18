@@ -36,6 +36,7 @@ public class TabQueueFragment extends Fragment
 {
 	private static final String TAG = "TabQueueFragment";
 	protected LayoutInflater inflater = null;
+	private ArrayList<QueueItem> slots = new ArrayList<QueueItem>();
 	private boolean paused = false;
 	private SabControl sab;
 	private Handler handler = new Handler(); 
@@ -49,7 +50,7 @@ public class TabQueueFragment extends Fragment
 	{
 		this.inflater = inflater;
 
-		Log.v(TAG, "onCreateView");
+		Log.v(TAG, "onCreateView : state==null? " + (state == null));
 		View v = inflater.inflate(R.layout.tab_queue, container, false);
 
 		//setup the sab controller with a refresher
@@ -59,46 +60,26 @@ public class TabQueueFragment extends Fragment
 				handler.post(updateQueueTask);
 			}
       });
-
-		//get the list
-		listAdapter = new QueueAdapter(getActivity());
-		listView = (ListView)v.findViewById(R.id.list);
-		listView.setAdapter(listAdapter);
-		listView.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
-		listView.setOnItemClickListener(listViewClick);
-
-		//register for the listview context menu
-		//registerForContextMenu(listView);
-
-		//conttrols
-		listProgress = (ProgressBar)v.findViewById(R.id.list_progress);
-		detailsFrame = v.findViewById(R.id.details);
-		btnItemMoveUp = (Button)v.findViewById(R.id.item_move_up);
-		btnItemMoveDown = (Button)v.findViewById(R.id.item_move_down);
-		btnItemDelete = (Button)v.findViewById(R.id.item_delete);
-		btnItemPause = (Button)v.findViewById(R.id.item_pause);
-		btnItemResume = (Button)v.findViewById(R.id.item_resume);
-
-		btnItemPause.setOnClickListener(new View.OnClickListener() {
-			public void onClick(View v) {
-				QueueItem item = currentItem();
-				if(item == null) return;
-				sab.pauseSlot(item);
-			}
-		});
-
-		btnItemResume.setOnClickListener(new View.OnClickListener() {
-			public void onClick(View v) {
-				QueueItem item = currentItem();
-				if(item == null) return;
-				sab.resumeSlot(item);
-			}
-		});
+		
+		setupList(v);
+		setupDetails(v);
 
 		//start the update timer
 		handler.post(updateQueueTask);
 
 		return v;
+	}
+
+   @Override public void onActivityCreated(Bundle state)
+	{
+		super.onActivityCreated(state);
+		Log.v(TAG, "onActivityCreated : state==null? " + (state == null));
+
+		if(state != null)
+		{
+			listView.setSelection(state.getInt("item_selected"));
+			updateDetails(currentItem());
+		}
 	}
 
 	@Override public void onPause()
@@ -123,12 +104,80 @@ public class TabQueueFragment extends Fragment
 		handler.removeCallbacks(updateQueueTask);
 	}
 
+	@Override public void onSaveInstanceState(Bundle outState)
+	{
+		super.onSaveInstanceState(outState);
+		outState.putInt("item_selected", listView.getCheckedItemPosition());
+	}
+
 	private QueueItem currentItem()
 	{
-		if(listView.getCheckedItemPosition() != ListView.INVALID_POSITION)
-			return (QueueItem)listAdapter.getItem(listView.getCheckedItemPosition());
+		int index = listView.getCheckedItemPosition();
+
+		//did we hit zero items in the list while trying to update?
+		if(listAdapter.getCount() == 0)
+		{
+			listView.setSelection(-1);
+			return null;
+		}
+
+		//if we are past the end of the list then move the selection
+		if(index >= listAdapter.getCount())
+		{
+			index = 0;
+			listView.setSelection(0);
+		}
+
+		//get the selected item
+		if(index != ListView.INVALID_POSITION)
+			return (QueueItem)listAdapter.getItem(index);
 		else
 			return null;
+	}
+
+	private void setupList(View v)
+	{
+		listAdapter = new QueueAdapter(getActivity(), slots);
+
+		listView = (ListView)v.findViewById(R.id.list);
+		listProgress = (ProgressBar)v.findViewById(R.id.list_progress);
+
+		listView.setAdapter(listAdapter);
+		listView.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
+
+		listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+			public synchronized void onItemClick(AdapterView<?> parent, View view, int pos, long id) {
+				QueueItem item = (QueueItem)parent.getAdapter().getItem(pos);
+				updateDetails(item);
+			}
+		});
+	}
+
+	private void setupDetails(View v)
+	{
+		detailsFrame = v.findViewById(R.id.details);
+		btnItemMoveUp = (Button)v.findViewById(R.id.item_move_up);
+		btnItemMoveDown = (Button)v.findViewById(R.id.item_move_down);
+		btnItemDelete = (Button)v.findViewById(R.id.item_delete);
+		btnItemPause = (Button)v.findViewById(R.id.item_pause);
+		btnItemResume = (Button)v.findViewById(R.id.item_resume);
+
+		//handlers
+		btnItemPause.setOnClickListener(new View.OnClickListener() {
+			public void onClick(View v) {
+				QueueItem item = currentItem();
+				if(item == null) return;
+				sab.pauseSlot(item);
+			}
+		});
+
+		btnItemResume.setOnClickListener(new View.OnClickListener() {
+			public void onClick(View v) {
+				QueueItem item = currentItem();
+				if(item == null) return;
+				sab.resumeSlot(item);
+			}
+		});
 	}
 
 	private void updateDetails(QueueItem item)
@@ -277,12 +326,6 @@ public class TabQueueFragment extends Fragment
 	}
 
 	//the listview click handler
-	private AdapterView.OnItemClickListener listViewClick = new AdapterView.OnItemClickListener() {
-		public synchronized void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-			QueueItem item = (QueueItem)parent.getAdapter().getItem(position);
-			updateDetails(item);
-		}
-	};
 
 	//start the download task and re-ping ourselves for continual updates
 	private Runnable updateQueueTask = new Runnable() {
@@ -298,9 +341,9 @@ public class TabQueueFragment extends Fragment
 
 	private class QueueAdapter extends ArrayAdapter<QueueItem>
 	{
-		public QueueAdapter(Context context)
+		public QueueAdapter(Context context, ArrayList<QueueItem> items)
 		{
-			super(context, R.layout.queue_item);
+			super(context, R.layout.queue_item, items);
 		}
 
 		@Override public View getView(int position, View convertView, ViewGroup parent)
@@ -350,6 +393,9 @@ public class TabQueueFragment extends Fragment
 		{
 			if(result != null)
 			{
+				//store the slots
+				slots = result.getSlots();
+
 				//reload the list
 				listAdapter.clear();
 				listAdapter.addAll(result.getSlots());

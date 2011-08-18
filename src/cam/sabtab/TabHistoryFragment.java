@@ -78,6 +78,18 @@ public class TabHistoryFragment extends Fragment
 		return v;
 	}
 
+   @Override public void onActivityCreated(Bundle state)
+	{
+		super.onActivityCreated(state);
+		Log.v(TAG, "onActivityCreated : state==null? " + (state == null));
+
+		if(state != null)
+		{
+			listView.setSelection(state.getInt("item_selected"));
+			updateDetails(currentItem());
+		}
+	}
+
 	@Override public void onPause()
 	{
 		super.onPause();
@@ -100,9 +112,42 @@ public class TabHistoryFragment extends Fragment
 		handler.removeCallbacks(updateHistoryTask);
 	}
 
+	@Override public void onSaveInstanceState(Bundle outState)
+	{
+		super.onSaveInstanceState(outState);
+		outState.putInt("item_selected", listView.getCheckedItemPosition());
+	}
+
+	private HistoryItem currentItem()
+	{
+		int index = listView.getCheckedItemPosition();
+
+		//did we hit zero items in the list while trying to update?
+		if(listAdapter.getCount() == 0)
+		{
+			listView.setSelection(-1);
+			return null;
+		}
+
+		//if we are past the end of the list then move the selection
+		if(index >= listAdapter.getCount())
+		{
+			index = 0;
+			listView.setSelection(0);
+		}
+
+		//get the selected item
+		if(index != ListView.INVALID_POSITION)
+			return (HistoryItem)listAdapter.getItem(index);
+		else
+			return null;
+	}
+
 	private TextView detailsScriptLog;
 	private void updateDetails(HistoryItem item)
 	{
+		if(paused || item == null) return;
+
 		detailsScriptLog.setText(item.getScriptLog());
 	}
 

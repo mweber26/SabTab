@@ -8,10 +8,12 @@ import java.util.List;
 
 import android.app.Activity;
 import android.app.ActionBar;
+import android.app.ActionBar.Tab;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.content.Context;
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
@@ -21,6 +23,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 import android.util.Log;
 
 public class SabTabActivity extends Activity
@@ -31,6 +34,7 @@ public class SabTabActivity extends Activity
 	private MenuItem resumeMenu;
 	private MenuItem statusMenu;
 	private MenuItem speedMenu;
+	private MenuItem settingsMenu;
 	private SabControl sab;
 	private Queue queue;
 	private Handler handler = new Handler(); 
@@ -38,6 +42,10 @@ public class SabTabActivity extends Activity
 	@Override public void onCreate(Bundle savedInstanceState)
 	{
 		super.onCreate(savedInstanceState);
+		Log.v(TAG, "onCreate()");
+
+		FragmentManager fragmentManager = getFragmentManager();
+		fragmentManager.enableDebugLogging(true);
 
 		//create the activity view
 		setContentView(R.layout.main);
@@ -54,7 +62,8 @@ public class SabTabActivity extends Activity
 		handler.post(updateQueueTask);
 
 		initTabs();
-		if(savedInstanceState != null) loadState(savedInstanceState);
+		if(savedInstanceState != null)
+			loadState(savedInstanceState);
 	}
 
 	@Override protected void onPause()
@@ -90,22 +99,38 @@ public class SabTabActivity extends Activity
 		bar.selectTab(bar.getTabAt(tabSelected));
 	}
 
+	@Override public void onSaveInstanceState(Bundle outState)
+	{
+		super.onSaveInstanceState(outState);
+
+		ActionBar bar = getActionBar();
+		int index = bar.getSelectedTab().getPosition();
+		outState.putInt("tab_selected", index);
+	}
+
 	private void initTabs()
 	{
+		Log.v(TAG, "initTabs()");
 		ActionBar bar = getActionBar();
 		bar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
 
-		Fragment queue = new TabQueueFragment();
-		bar.addTab(bar.newTab().setText(R.string.tab_queue).setTabListener(new TabListener(queue)));
+		FragmentManager fragmentManager = getFragmentManager();
 
-		Fragment history = new TabHistoryFragment();
-		bar.addTab(bar.newTab().setText(R.string.tab_history).setTabListener(new TabListener(history)));
+		Fragment queueTab = fragmentManager.findFragmentByTag("queue");
+	 	Fragment historyTab = fragmentManager.findFragmentByTag("history");
+	 	Fragment statusTab = fragmentManager.findFragmentByTag("status");
 
-		Fragment status = new TabStatusFragment();
-		bar.addTab(bar.newTab().setText(R.string.tab_status).setTabListener(new TabListener(status)));
+		if(queueTab == null) { queueTab = new TabQueueFragment(); Log.v(TAG, "new queue tab"); }
+		if(historyTab == null) { historyTab = new TabHistoryFragment(); Log.v(TAG, "new history tab"); }
+		if(statusTab == null) { statusTab = new TabStatusFragment(); Log.v(TAG, "new status tab"); }
 
-		Fragment settings = new TabSettingsFragment();
-		bar.addTab(bar.newTab().setText(R.string.tab_settings).setTabListener(new TabListener(settings)));
+		bar.addTab(bar.newTab().setText(R.string.tab_queue).
+			setTabListener(new TabListener(queueTab, "queue")));
+		bar.addTab(bar.newTab().setText(R.string.tab_history).
+			setTabListener(new TabListener(historyTab, "history")));
+		bar.addTab(bar.newTab().setText(R.string.tab_status).
+			setTabListener(new TabListener(statusTab, "status")));
+		Log.v(TAG, "initTabs() done");
 	}
 
 	@Override public boolean onCreateOptionsMenu(Menu menu)
@@ -117,6 +142,8 @@ public class SabTabActivity extends Activity
 		resumeMenu = menu.findItem(R.id.menu_resume);
 		statusMenu = menu.findItem(R.id.menu_status);
 		speedMenu = menu.findItem(R.id.menu_speed);
+		settingsMenu = menu.findItem(R.id.menu_settings);
+		settingsMenu.setIntent(new Intent(this, SettingsActivity.class));
 
 		pauseMenu.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
 				public boolean onMenuItemClick(MenuItem item) {
@@ -134,15 +161,6 @@ public class SabTabActivity extends Activity
 
 		updateMenus();
 		return true;
-	}
-
-	@Override public void onSaveInstanceState(Bundle outState)
-	{
-		super.onSaveInstanceState(outState);
-
-		ActionBar bar = getActionBar();
-		int index = bar.getSelectedTab().getPosition();
-		outState.putInt("tab_selected", index);
 	}
 
 	private void updateMenus()
@@ -225,19 +243,27 @@ public class SabTabActivity extends Activity
 	private class TabListener implements ActionBar.TabListener
 	{
 		private Fragment mFragment;
+		private String tag;
 
-		public TabListener(Fragment fragment)
+		public TabListener(Fragment fragment, String tag)
 		{
+			this.tag = tag;
 			mFragment = fragment;
 		}
 
 		public void onTabSelected(ActionBar.Tab tab, FragmentTransaction ft)
 		{
-			ft.add(R.id.fragment_content, mFragment, null);
+			Log.v(TAG, "onTabSelected(" + mFragment.getClass().getName() + ", " + tag + ")");
+			if(!mFragment.isAdded())
+			{
+				Log.v(TAG, "  adding to transaction");
+				ft.add(R.id.fragment_content, mFragment, tag);
+			}
 		}
 
 		public void onTabUnselected(ActionBar.Tab tab, FragmentTransaction ft)
 		{
+			Log.v(TAG, "onTabUnselected(" + mFragment.getClass().getName() + ", " + tag + ")");
 			ft.remove(mFragment);
 		}
 
