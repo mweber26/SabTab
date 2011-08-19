@@ -122,42 +122,6 @@
 						/>
 					</TableRow>
 				</TableLayout>
-
-				<Button
-					android:id="@+id/item_move_up"
-					android:layout_height="wrap_content"
-					android:layout_width="wrap_content"
-					android:layout_alignParentRight="true"
-					android:layout_alignParentBottom="true"
-					android:text="Move up" />
-				<Button
-					android:id="@+id/item_move_down"
-					android:layout_height="wrap_content"
-					android:layout_width="wrap_content"
-					android:layout_toLeftOf="@id/item_move_up"
-					android:layout_alignTop="@id/item_move_up"
-					android:text="Move down" />
-				<Button
-					android:id="@+id/item_pause"
-					android:layout_height="wrap_content"
-					android:layout_width="wrap_content"
-					android:layout_toLeftOf="@id/item_move_down"
-					android:layout_alignTop="@id/item_move_down"
-					android:text="Pause" />
-				<Button
-					android:id="@+id/item_resume"
-					android:layout_height="wrap_content"
-					android:layout_width="wrap_content"
-					android:layout_toLeftOf="@id/item_pause"
-					android:layout_alignTop="@id/item_pause"
-					android:text="Resume" />
-				<Button
-					android:id="@+id/item_delete"
-					android:layout_height="wrap_content"
-					android:layout_width="wrap_content"
-					android:layout_toLeftOf="@id/item_resume"
-					android:layout_alignTop="@id/item_resume"
-					android:text="Delete" />
 			</RelativeLayout>
 		</RelativeLayout>
 	</LinearLayout>

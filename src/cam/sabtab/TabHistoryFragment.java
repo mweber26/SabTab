@@ -25,7 +25,7 @@ public class TabHistoryFragment extends ListDetailsFragment<HistoryItem>
 	protected int getResourceViewId() { return R.layout.tab_history; }
 	protected int getResourceItemId() { return R.layout.history_item; }
 
-	@Override protected void initList(ListView lv)
+	protected void initList(ListView lv)
 	{
 		//register for the listview context menu
 		registerForContextMenu(lv);
@@ -47,10 +47,6 @@ public class TabHistoryFragment extends ListDetailsFragment<HistoryItem>
 
 		tv = (TextView)row.findViewById(R.id.history_stats);
 		tv.setText(item.getStats());
-	}
-
-	protected void setupDetails(View v)
-	{
 	}
 
 	protected void updateDetails(View v, HistoryItem item)

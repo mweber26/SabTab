@@ -96,6 +96,7 @@ public class SabTabActivity extends Activity
 		ActionBar bar = getActionBar();
 
 		int tabSelected = state.getInt("tab_selected");
+		Log.v(TAG, "loadState(tab=" + tabSelected + ")");
 		bar.selectTab(bar.getTabAt(tabSelected));
 	}
 

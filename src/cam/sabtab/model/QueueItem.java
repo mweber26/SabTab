@@ -1,4 +1,5 @@
 package cam.sabtab.model;
+import cam.sabtab.model.SabEntity;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -15,7 +16,7 @@ import org.json.JSONObject;
 
 import android.util.Log;
 
-public class QueueItem
+public class QueueItem implements SabEntity
 {
 	private Queue queue;
 	private String id;

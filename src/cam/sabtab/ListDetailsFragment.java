@@ -1,4 +1,5 @@
 package cam.sabtab;
+import cam.sabtab.model.SabEntity;
 import cam.sabtab.model.SabControl;
 import cam.sabtab.model.SabControlEvent;
 
@@ -30,7 +31,7 @@ import android.widget.TextView;
 import android.widget.ProgressBar;
 import android.util.Log;
 
-public abstract class ListDetailsFragment<T> extends Fragment
+public abstract class ListDetailsFragment<T extends SabEntity> extends Fragment
 {
 	private static final String TAG = "ListDetailsFragment";
 	protected LayoutInflater inflater = null;
@@ -42,12 +43,12 @@ public abstract class ListDetailsFragment<T> extends Fragment
 	private ItemAdapter listAdapter;
 	private ProgressBar listProgress;
 	private View detailsFrame;
+	private String restoreSelection;
 
 	protected abstract int getRefreshRate(); 
 	protected abstract int getResourceViewId(); 
 	protected abstract int getResourceItemId();
 
-	protected abstract void setupDetails(View v);
 	protected abstract void updateDetails(View v, T item);
 	protected abstract void updateItem(View v, T item);
 	protected abstract List<T> fetchItems(SabControl sab);
@@ -88,10 +89,7 @@ public abstract class ListDetailsFragment<T> extends Fragment
 		Log.v(TAG, "onActivityCreated : state==null? " + (state == null));
 
 		if(state != null)
-		{
-			listView.setSelection(state.getInt("item_selected"));
-			updateDetailsInternal(getCurrentItem());
-		}
+			restoreSelection = state.getString("selected_id");
 	}
 
 	@Override public void onHiddenChanged(boolean hidden)
@@ -128,6 +126,7 @@ public abstract class ListDetailsFragment<T> extends Fragment
 		{
 			paused = false;
 			handler.post(updateListTask);
+			updateDetailsInternal(getCurrentItem());
 		}
 	}
 
@@ -141,7 +140,10 @@ public abstract class ListDetailsFragment<T> extends Fragment
 	@Override public void onSaveInstanceState(Bundle outState)
 	{
 		super.onSaveInstanceState(outState);
-		outState.putInt("item_selected", listView.getCheckedItemPosition());
+
+		T item = getCurrentItem();
+		if(item != null)
+			outState.putString("selected_id", item.getId());
 	}
 
 	protected T getCurrentItem()
@@ -151,15 +153,15 @@ public abstract class ListDetailsFragment<T> extends Fragment
 		//did we hit zero items in the list while trying to update?
 		if(listAdapter.getCount() == 0)
 		{
-			listView.setSelection(-1);
+			listSelectIndex(index);
 			return null;
 		}
 
-		//if we are past the end of the list then move the selection
+		//if we are past the end of the list then unselect
 		if(index >= listAdapter.getCount())
 		{
-			index = 0;
-			listView.setSelection(0);
+			listSelectIndex(index);
+			return null;
 		}
 
 		//get the selected item
@@ -189,6 +191,47 @@ public abstract class ListDetailsFragment<T> extends Fragment
 		initList(listView);
 	}
 
+	private void listUnselectAll()
+	{
+		for(int i = 0; i < listAdapter.getCount(); i++)
+			listView.setItemChecked(i, false);
+	}
+
+	private void listSelectIndex(int index)
+	{
+		listUnselectAll();
+		if(index >= 0 && index <= listAdapter.getCount())
+		{
+			listView.setItemChecked(index, true);
+			updateDetailsInternal((T)listAdapter.getItem(index));
+		}
+		else
+		{
+			updateDetailsInternal(null);
+		}
+	}
+
+	private void listSelectId(String id)
+	{
+		//if we don't find the id, then don't select anything
+		int index = -1;
+
+		for(int i = 0; i < listAdapter.getCount(); i++)
+		{
+			T item =  (T)listAdapter.getItem(i);
+
+			Log.v(TAG, " checking " + ((SabEntity)item).getId());
+			if(item != null && (item instanceof SabEntity) && ((SabEntity)item).getId().equals(id))
+			{
+				index = i;
+				break;
+			}
+		}
+
+		Log.v(TAG, "got index " + index);
+		listSelectIndex(index);
+	}
+
 	protected void initList(ListView lv)
 	{
 	}
@@ -204,10 +247,21 @@ public abstract class ListDetailsFragment<T> extends Fragment
 	{
 	}
 
+	protected void setupDetails(View v)
+	{
+	}
+
 	private void updateDetailsInternal(T item)
 	{
-		if(paused || item == null)
+		if(paused)
 			return;
+
+		//if nothing is selected then hide the details
+		if(item == null)
+		{
+			detailsFrame.setVisibility(View.INVISIBLE);
+			return;
+		}
 
 		updateDetails(detailsFrame, item);
 		detailsFrame.setVisibility(View.VISIBLE);
@@ -222,6 +276,14 @@ public abstract class ListDetailsFragment<T> extends Fragment
 
 			handler.removeCallbacks(updateListTask);
 			handler.postDelayed(this, getRefreshRate());
+		}
+	};
+
+	private Runnable updateSelectedIdTask = new Runnable() {
+		public void run() {
+			Log.v(TAG, "restoring selection of " + restoreSelection);
+			listSelectId(restoreSelection);
+			restoreSelection = null;
 		}
 	};
 
@@ -263,6 +325,8 @@ public abstract class ListDetailsFragment<T> extends Fragment
 		{
 			if(result != null)
 			{
+				T item = getCurrentItem();
+
 				//store the items
 				items = new ArrayList<T>(result);
 
@@ -271,9 +335,15 @@ public abstract class ListDetailsFragment<T> extends Fragment
 				listAdapter.addAll(result);
 				listAdapter.notifyDataSetChanged();
 
-				//update details if we have a selected item
-				T item = getCurrentItem();
-				if(item != null) updateDetailsInternal(item);
+				if(restoreSelection != null)
+				{
+					handler.postDelayed(updateSelectedIdTask, 10);
+				}
+				else if(item != null) //update details if we have a selected item
+				{
+					restoreSelection = item.getId();
+					handler.postDelayed(updateSelectedIdTask, 10);
+				}
 			}
 
 			//hide the spinner

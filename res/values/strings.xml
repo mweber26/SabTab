@@ -21,8 +21,9 @@
 
 	<string name="queue_list_pause">Pause</string>
 	<string name="queue_list_resume">Resume</string>
-	<string name="queue_list_move">Move</string>
-	<string name="queue_list_delete">Delete</string>
+	<string name="queue_list_moveup">Move Up</string>
+	<string name="queue_list_movedown">Move Down</string>
+	<string name="queue_list_cancel">Cancel</string>
 	<string name="queue_list_change_priority">Change priority</string>
 	<string name="queue_list_change_script">Change script</string>
 	<string name="queue_list_change_category">Change category</string>

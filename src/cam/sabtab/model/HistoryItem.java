@@ -1,4 +1,5 @@
 package cam.sabtab.model;
+import cam.sabtab.model.SabEntity;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -13,7 +14,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class HistoryItem
+public class HistoryItem implements SabEntity
 {
 	private String id;
 	private String name;
@@ -44,6 +45,7 @@ public class HistoryItem
 		downloadedAt = new Date(slot.getLong("downloaded"));
 	}
 
+	public String getId() { return id; }
 	public String getName() { return name; }
 	public String getScriptLog() { return scriptLog; }
 	public String getStatus() { return status; }

@@ -22,11 +22,16 @@ import android.util.Log;
 public class TabQueueFragment extends ListDetailsFragment<QueueItem>
 {
 	private static final String TAG = "TabQueueFragment";
-	private Button btnItemMoveUp, btnItemMoveDown, btnItemDelete, btnItemPause, btnItemResume;
 
 	protected int getRefreshRate() { return 10000; }
 	protected int getResourceViewId() { return R.layout.tab_queue; }
 	protected int getResourceItemId() { return R.layout.queue_item; }
+
+	protected void initList(ListView lv)
+	{
+		//register for the listview context menu
+		registerForContextMenu(lv);
+	}
 
 	protected List<QueueItem> fetchItems(SabControl sab)
 	{
@@ -57,27 +62,50 @@ public class TabQueueFragment extends ListDetailsFragment<QueueItem>
 		progress.setProgress(item.getProgress());
 	}
 
-	protected void setupDetails(View v)
+	@Override protected void onContextMenuForItem(ContextMenu menu, final QueueItem item)
 	{
-		btnItemMoveUp = (Button)v.findViewById(R.id.item_move_up);
-		btnItemMoveDown = (Button)v.findViewById(R.id.item_move_down);
-		btnItemDelete = (Button)v.findViewById(R.id.item_delete);
-		btnItemPause = (Button)v.findViewById(R.id.item_pause);
-		btnItemResume = (Button)v.findViewById(R.id.item_resume);
+		menu.setHeaderTitle(item.getName());
 
-		//handlers
-		btnItemPause.setOnClickListener(new View.OnClickListener() {
-			public void onClick(View v) {
-				QueueItem item = getCurrentItem();
-				getSab().pauseSlot(item);
-			}
+		if(item.isPaused())
+		{
+			MenuItem resume = menu.add(R.string.queue_list_resume);
+			resume.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+					public boolean onMenuItemClick(MenuItem menu) {
+						getSab().resumeSlot(item);
+						return true;
+					}
+			});
+		}
+		else
+		{
+			MenuItem pause = menu.add(R.string.queue_list_pause);
+			pause.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+					public boolean onMenuItemClick(MenuItem menu) {
+						getSab().pauseSlot(item);
+						return true;
+					}
+			});
+		}
+
+		MenuItem moveUp = menu.add(R.string.queue_list_moveup);
+		moveUp.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+				public boolean onMenuItemClick(MenuItem menu) {
+					return true;
+				}
 		});
 
-		btnItemResume.setOnClickListener(new View.OnClickListener() {
-			public void onClick(View v) {
-				QueueItem item = getCurrentItem();
-				getSab().resumeSlot(item);
-			}
+		MenuItem moveDown = menu.add(R.string.queue_list_movedown);
+		moveDown.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+				public boolean onMenuItemClick(MenuItem menu) {
+					return true;
+				}
+		});
+
+		MenuItem cancel = menu.add(R.string.queue_list_cancel);
+		cancel.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+				public boolean onMenuItemClick(MenuItem menu) {
+					return true;
+				}
 		});
 	}
 
@@ -101,16 +129,13 @@ public class TabQueueFragment extends ListDetailsFragment<QueueItem>
 		total.setText(item.getSizeTotal());
 		age.setText(item.getAge());
 
-		btnItemResume.setVisibility(item.isPaused() ? View.VISIBLE : View.GONE);
-		btnItemPause.setVisibility(item.isPaused() ? View.GONE : View.VISIBLE);
-
 		loadPrioritySpinner(v, item);
 		loadCategorySpinner(v, item);
 		loadUnpackSpinner(v, item);
 		loadScriptSpinner(v, item);
 	}
 
-	private void loadPrioritySpinner(View v, QueueItem item)
+	private void loadPrioritySpinner(View v, final QueueItem item)
 	{
 		ArrayList<String> arr = new ArrayList<String>();
 		arr.add(getString(R.string.priority_force));
@@ -125,6 +150,7 @@ public class TabQueueFragment extends ListDetailsFragment<QueueItem>
 
 		spin.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
 			public void onItemSelected(AdapterView<?> arg0, View view, int position, long id) {
+				getSab().changePriority(item, position);
 			}
 
 			public void onNothingSelected(AdapterView<?> arg0) {
@@ -139,9 +165,9 @@ public class TabQueueFragment extends ListDetailsFragment<QueueItem>
 		if(item.getPriority().equals("Low")) spin.setSelection(3);
 	}
 
-	private void loadCategorySpinner(View v, QueueItem item)
+	private void loadCategorySpinner(View v, final QueueItem item)
 	{
-		ArrayList<String> cats = item.getQueue().getCategories();
+		final ArrayList<String> cats = item.getQueue().getCategories();
 
 		Spinner spin = (Spinner)v.findViewById(R.id.queue_category);
 		ArrayAdapter<String> adapter = new ArrayAdapter<String>(getActivity().getApplicationContext(),
@@ -150,6 +176,7 @@ public class TabQueueFragment extends ListDetailsFragment<QueueItem>
 
 		spin.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
 			public void onItemSelected(AdapterView<?> arg0, View view, int position, long id) {
+				getSab().changeCategory(item, "Default", cats.get(position));
 			}
 
 			public void onNothingSelected(AdapterView<?> arg0) {
@@ -168,7 +195,7 @@ public class TabQueueFragment extends ListDetailsFragment<QueueItem>
 		}
 	}
 
-	private void loadUnpackSpinner(View v, QueueItem item)
+	private void loadUnpackSpinner(View v, final QueueItem item)
 	{
 		ArrayList<String> arr = new ArrayList<String>();
 		arr.add(getString(R.string.unpack1));
@@ -183,6 +210,7 @@ public class TabQueueFragment extends ListDetailsFragment<QueueItem>
 
 		spin.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
 			public void onItemSelected(AdapterView<?> arg0, View view, int position, long id) {
+				getSab().changeUnpack(item, position);
 			}
 
 			public void onNothingSelected(AdapterView<?> arg0) {
@@ -193,9 +221,9 @@ public class TabQueueFragment extends ListDetailsFragment<QueueItem>
 		spin.setSelection(item.getUnpackOptionIndex());
 	}
 
-	private void loadScriptSpinner(View v, QueueItem item)
+	private void loadScriptSpinner(View v, final QueueItem item)
 	{
-		ArrayList<String> scripts = item.getQueue().getScripts();
+		final ArrayList<String> scripts = item.getQueue().getScripts();
 
 		Spinner spin = (Spinner)v.findViewById(R.id.queue_script);
 		ArrayAdapter<String> adapter = new ArrayAdapter<String>(getActivity().getApplicationContext(),
@@ -204,6 +232,7 @@ public class TabQueueFragment extends ListDetailsFragment<QueueItem>
 
 		spin.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
 			public void onItemSelected(AdapterView<?> arg0, View view, int position, long id) {
+				getSab().changeScript(item, scripts.get(position));
 			}
 
 			public void onNothingSelected(AdapterView<?> arg0) {

@@ -130,6 +130,7 @@ public class SabControl
 			BufferedReader in = new BufferedReader(new InputStreamReader(tc.getInputStream()));
 			String line = in.readLine();
 
+			Log.v(TAG, "ret = " + line);
 			if(event != null) event.refresh();
 
 			return true;
@@ -195,5 +196,97 @@ public class SabControl
       };
 
 		task.execute();
+	}
+
+	public void changePriority(final QueueItem item, int priority)
+	{
+		if(item == null) return;
+
+		if(priority == 0 && item.getPriority().equals("Force")) return;
+		if(priority == 1 && item.getPriority().equals("High")) return;
+		if(priority == 2 && item.getPriority().equals("Normal")) return;
+		if(priority == 3 && item.getPriority().equals("Low")) return;
+
+		Log.v(TAG, "changePriority(" + item.getId() + ", " + priority + ")");
+
+		if(priority == 0) //force
+			priority = 2;
+		if(priority == 1) //high
+			priority = 1;
+		if(priority == 2) //normal
+			priority = 0;
+		if(priority == 3) //low
+			priority = -1;
+
+		final int taskPriority = priority;
+		AsyncTask<Void, Void, Void> task = new AsyncTask<Void, Void, Void>() {
+			protected Void doInBackground(Void... unused) {
+				sendCommand("mode=queue&name=priority&value=" + item.getId() + "&value2=" + taskPriority);
+				return null;
+			}
+      };
+
+		task.execute();
+	}
+
+	public void changeCategory(final QueueItem item, String defaultCategoryName, String category)
+	{
+		if(item == null) return;
+
+		if(!item.getCategory().equals(category))
+		{
+			Log.v(TAG, "changeCategory(" + item.getId() + ", " + category + ")");
+
+			if(defaultCategoryName.equals(category))
+				category = "*";
+
+			final String taskCategory = category;
+			AsyncTask<Void, Void, Void> task = new AsyncTask<Void, Void, Void>() {
+				protected Void doInBackground(Void... unused) {
+					sendCommand("mode=change_cat&value=" + item.getId() + "&value2=" + taskCategory);
+					return null;
+				}
+      	};
+
+			task.execute();
+		}
+	}
+
+	public void changeScript(final QueueItem item, final String script)
+	{
+		if(item == null) return;
+
+		if(!item.getScript().equals(script))
+		{
+			Log.v(TAG, "changeScript(" + item.getId() + ", " + script + ")");
+
+			AsyncTask<Void, Void, Void> task = new AsyncTask<Void, Void, Void>() {
+				protected Void doInBackground(Void... unused) {
+					sendCommand("mode=change_script&value=" + item.getId() + "&value2=" + script);
+					return null;
+				}
+      	};
+
+			task.execute();
+		}
+	}
+
+	public void changeUnpack(final QueueItem item, final int unpack)
+	{
+		if(item == null) return;
+
+		if(item.getUnpackOptionIndex() != unpack)
+		{
+			Log.v(TAG, "changeUnpack(" + item.getId() + ", " + unpack + ")");
+
+			AsyncTask<Void, Void, Void> task = new AsyncTask<Void, Void, Void>() {
+				protected Void doInBackground(Void... unused) {
+					sendCommand("mode=change_opts&value="+item.getId()+"&value2="+unpack);
+					return null;
+				}
+      	};
+
+			task.execute();
+		}
 	}
 }
