@@ -32,8 +32,6 @@ public class SabTabActivity extends Activity
 	private boolean paused = false;
 	private MenuItem pauseMenu;
 	private MenuItem resumeMenu;
-	private MenuItem statusMenu;
-	private MenuItem speedMenu;
 	private MenuItem settingsMenu;
 	private SabControl sab;
 	private Queue queue;
@@ -149,8 +147,6 @@ public class SabTabActivity extends Activity
 
 		pauseMenu = menu.findItem(R.id.menu_pause);
 		resumeMenu = menu.findItem(R.id.menu_resume);
-		statusMenu = menu.findItem(R.id.menu_status);
-		speedMenu = menu.findItem(R.id.menu_speed);
 		settingsMenu = menu.findItem(R.id.menu_settings);
 		settingsMenu.setIntent(new Intent(this, SettingsActivity.class));
 
@@ -179,23 +175,6 @@ public class SabTabActivity extends Activity
 		if(queue != null)
 		{
 			if(queue.isPaused())
-				statusMenu.setTitle(getString(R.string.header_paused));
-			else if(queue.isIdle())
-				statusMenu.setTitle(getString(R.string.header_idle));
-			else
-				statusMenu.setTitle(getString(R.string.header_running));
-
-			if(queue.isRunning())
-			{
-				speedMenu.setVisible(true);
-				speedMenu.setTitle(queue.getDownloadSpeed());
-			}
-			else
-			{
-				speedMenu.setVisible(false);
-			}
-
-			if(queue.isPaused())
 			{
 				resumeMenu.setVisible(true);
 				pauseMenu.setVisible(false);
@@ -208,8 +187,6 @@ public class SabTabActivity extends Activity
 		}
 		else
 		{
-			statusMenu.setTitle(getString(R.string.header_connecting));
-			speedMenu.setVisible(false);
 			resumeMenu.setVisible(false);
 			pauseMenu.setVisible(true);
 		}
