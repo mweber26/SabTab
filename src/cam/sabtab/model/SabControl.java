@@ -32,8 +32,8 @@ public class SabControl
 	{
 		this.event = event;
 
-		url = "http://192.168.2.2/sab/api?apikey=106f7d01dda207eb7907b30edb124dc8";
-		//url = "http://192.168.0.50:8080/sab/api?apikey=106f7d01dda207eb7907b30edb124dc8";
+		//url = "http://192.168.2.2/sab/api?apikey=106f7d01dda207eb7907b30edb124dc8";
+		url = "http://192.168.0.50:8080/sab/api?apikey=106f7d01dda207eb7907b30edb124dc8";
 	}
 
 	public Queue fetchQueue(int offset, int count)
@@ -288,5 +288,40 @@ public class SabControl
 
 			task.execute();
 		}
+	}
+
+	public void moveItem(final QueueItem item, final int slot)
+	{
+		if(item == null) return;
+
+		if(item.getSlotIndex() != slot)
+		{
+			Log.v(TAG, "moveItem(" + item.getId() + ", " + slot + ")");
+
+			AsyncTask<Void, Void, Void> task = new AsyncTask<Void, Void, Void>() {
+				protected Void doInBackground(Void... unused) {
+					sendCommand("mode=switch&value=" + item.getId() + "&value2=" + slot);
+					return null;
+				}
+      	};
+
+			task.execute();
+		}
+	}
+
+	public void deleteItem(final QueueItem item)
+	{
+		if(item == null) return;
+
+		Log.v(TAG, "deleteItem(" + item.getId() + ")");
+
+		AsyncTask<Void, Void, Void> task = new AsyncTask<Void, Void, Void>() {
+			protected Void doInBackground(Void... unused) {
+				sendCommand("mode=queue&name=delete&value=" + item.getId());
+				return null;
+			}
+      };
+
+		task.execute();
 	}
 }

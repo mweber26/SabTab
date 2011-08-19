@@ -30,6 +30,7 @@ public class QueueItem implements SabEntity
 	private String category;
 	private int percentage;
 	private int unpackOptions;
+	private int slotIndex;
 	private String avgAge;
 	private String eta;
 
@@ -49,6 +50,7 @@ public class QueueItem implements SabEntity
 		unpackOptions = slot.getInt("unpackopts");
 		avgAge = slot.getString("avg_age");
 		eta = slot.getString("eta");
+		slotIndex = slot.getInt("index");
 	}
 
 	public Queue getQueue() { return queue; }
@@ -62,6 +64,7 @@ public class QueueItem implements SabEntity
 			+ getSizeLeft() + " left of " + getSizeTotal();
 	}
 
+	public int getSlotIndex() { return slotIndex; }
 	public String getSizeTotal() { return Helper.formatSize((long)(totalMB * 1024 * 1024)); }
 	public String getSizeLeft() { return Helper.formatSize((long)(leftMB * 1024 * 1024)); }
 	public String getPriority() { return priority; }

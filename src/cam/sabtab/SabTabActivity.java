@@ -107,6 +107,7 @@ public class SabTabActivity extends Activity
 		ActionBar bar = getActionBar();
 		int index = bar.getSelectedTab().getPosition();
 		outState.putInt("tab_selected", index);
+		Log.v(TAG, "saveState(tab=" + index + ")");
 	}
 
 	private void initTabs()
@@ -131,6 +132,13 @@ public class SabTabActivity extends Activity
 			setTabListener(new TabListener(historyTab, "history")));
 		bar.addTab(bar.newTab().setText(R.string.tab_status).
 			setTabListener(new TabListener(statusTab, "status")));
+
+		FragmentTransaction ft = fragmentManager.beginTransaction();
+		if(queueTab.isAdded()) ft.hide(queueTab);
+		if(historyTab.isAdded()) ft.hide(historyTab);
+		if(statusTab.isAdded()) ft.hide(statusTab);
+		ft.commit();
+
 		Log.v(TAG, "initTabs() done");
 	}
 

@@ -7,6 +7,9 @@ import cam.sabtab.ListDetailsFragment;
 import java.util.ArrayList;
 import java.util.List;
 
+import android.app.AlertDialog;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.view.View;
 import android.view.ContextMenu;
 import android.view.MenuItem;
@@ -87,26 +90,53 @@ public class TabQueueFragment extends ListDetailsFragment<QueueItem>
 			});
 		}
 
-		MenuItem moveUp = menu.add(R.string.queue_list_moveup);
-		moveUp.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
-				public boolean onMenuItemClick(MenuItem menu) {
-					return true;
-				}
-		});
+		if(item.getSlotIndex() > 0)
+		{
+			MenuItem moveUp = menu.add(R.string.queue_list_moveup);
+			moveUp.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+					public boolean onMenuItemClick(MenuItem menu) {
+						getSab().moveItem(item, item.getSlotIndex() - 1);
+						return true;
+					}
+			});
+		}
 
-		MenuItem moveDown = menu.add(R.string.queue_list_movedown);
-		moveDown.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
-				public boolean onMenuItemClick(MenuItem menu) {
-					return true;
-				}
-		});
+		if(item.getSlotIndex() < item.getQueue().getNumberOfSlots() - 1)
+		{
+			MenuItem moveDown = menu.add(R.string.queue_list_movedown);
+			moveDown.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+					public boolean onMenuItemClick(MenuItem menu) {
+						getSab().moveItem(item, item.getSlotIndex() + 1);
+						return true;
+					}
+			});
+		}
 
 		MenuItem cancel = menu.add(R.string.queue_list_cancel);
 		cancel.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
 				public boolean onMenuItemClick(MenuItem menu) {
+					deleteConfirm(item);
 					return true;
 				}
 		});
+	}
+
+	private void deleteConfirm(final QueueItem item)
+	{
+		AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+		builder.setMessage(getActivity().getString(R.string.delete_confirm))
+			.setCancelable(false)
+			.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+				public void onClick(DialogInterface dialog, int id) {
+					getSab().deleteItem(item);
+				}
+			})
+			.setNegativeButton("No", new DialogInterface.OnClickListener() {
+				public void onClick(DialogInterface dialog, int id) {
+					dialog.cancel();
+				}
+			});
+		builder.show();
 	}
 
 	protected void updateDetails(View v, QueueItem item)
@@ -137,6 +167,7 @@ public class TabQueueFragment extends ListDetailsFragment<QueueItem>
 
 	private void loadPrioritySpinner(View v, final QueueItem item)
 	{
+		Context context = getActivity().getApplicationContext();
 		ArrayList<String> arr = new ArrayList<String>();
 		arr.add(getString(R.string.priority_force));
 		arr.add(getString(R.string.priority_high));
@@ -144,7 +175,7 @@ public class TabQueueFragment extends ListDetailsFragment<QueueItem>
 		arr.add(getString(R.string.priority_low));
 
 		Spinner spin = (Spinner)v.findViewById(R.id.queue_priority);
-		ArrayAdapter<String> adapter = new ArrayAdapter<String>(getActivity().getApplicationContext(),
+		ArrayAdapter<String> adapter = new ArrayAdapter<String>(context,
 			android.R.layout.simple_spinner_item, arr);
 		adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 
@@ -167,10 +198,11 @@ public class TabQueueFragment extends ListDetailsFragment<QueueItem>
 
 	private void loadCategorySpinner(View v, final QueueItem item)
 	{
+		Context context = getActivity().getApplicationContext();
 		final ArrayList<String> cats = item.getQueue().getCategories();
 
 		Spinner spin = (Spinner)v.findViewById(R.id.queue_category);
-		ArrayAdapter<String> adapter = new ArrayAdapter<String>(getActivity().getApplicationContext(),
+		ArrayAdapter<String> adapter = new ArrayAdapter<String>(context,
 			android.R.layout.simple_spinner_item, cats);
 		adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 
@@ -197,6 +229,8 @@ public class TabQueueFragment extends ListDetailsFragment<QueueItem>
 
 	private void loadUnpackSpinner(View v, final QueueItem item)
 	{
+		Context context = getActivity().getApplicationContext();
+
 		ArrayList<String> arr = new ArrayList<String>();
 		arr.add(getString(R.string.unpack1));
 		arr.add(getString(R.string.unpack2));
@@ -204,7 +238,7 @@ public class TabQueueFragment extends ListDetailsFragment<QueueItem>
 		arr.add(getString(R.string.unpack4));
 
 		Spinner spin = (Spinner)v.findViewById(R.id.queue_unpack);
-		ArrayAdapter<String> adapter = new ArrayAdapter<String>(getActivity().getApplicationContext(),
+		ArrayAdapter<String> adapter = new ArrayAdapter<String>(context,
 			android.R.layout.simple_spinner_item, arr);
 		adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 
@@ -223,10 +257,11 @@ public class TabQueueFragment extends ListDetailsFragment<QueueItem>
 
 	private void loadScriptSpinner(View v, final QueueItem item)
 	{
+		Context context = getActivity().getApplicationContext();
 		final ArrayList<String> scripts = item.getQueue().getScripts();
 
 		Spinner spin = (Spinner)v.findViewById(R.id.queue_script);
-		ArrayAdapter<String> adapter = new ArrayAdapter<String>(getActivity().getApplicationContext(),
+		ArrayAdapter<String> adapter = new ArrayAdapter<String>(context,
 			android.R.layout.simple_spinner_item, scripts);
 		adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 

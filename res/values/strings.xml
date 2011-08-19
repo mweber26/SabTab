@@ -19,11 +19,13 @@
 	<string name="history_list_retry">Retry</string>
 	<string name="history_list_delete">Delete</string>
 
+	<string name="delete_confirm">Are you sure you want to cancel the download and delete the downloaded  parts?</string>
+
 	<string name="queue_list_pause">Pause</string>
 	<string name="queue_list_resume">Resume</string>
 	<string name="queue_list_moveup">Move Up</string>
 	<string name="queue_list_movedown">Move Down</string>
-	<string name="queue_list_cancel">Cancel</string>
+	<string name="queue_list_cancel">Cancel download</string>
 	<string name="queue_list_change_priority">Change priority</string>
 	<string name="queue_list_change_script">Change script</string>
 	<string name="queue_list_change_category">Change category</string>
@@ -40,7 +42,7 @@
 
 	<string name="pref_sabtab_category">SabTab</string>
 	<string name="pref_sabserver_title">SABnzbd server</string>
-	<string name="pref_sabserver_summary">The SABnzbd server address to connect to [current is %s]</string>
+	<string name="pref_sabserver_summary">Current : %s</string>
 	<string name="pref_sabapikey_title">SABnzbd API key</string>
-	<string name="pref_sabapikey_summary">The SABnzbd server API key [current is %s]</string>
+	<string name="pref_sabapikey_summary">Current : %s</string>
 </resources>
