@@ -22,6 +22,16 @@
 				<category android:name="android.intent.category.BROWSABLE" />
 				<data android:mimeType="application/x-nzb" />
 			</intent-filter>
+
+			<intent-filter>
+				<action android:name="android.intent.action.VIEW" />
+				<category android:name="android.intent.category.DEFAULT" />
+				<category android:name="android.intent.category.BROWSABLE" />
+				<data android:scheme="http" android:host="*" android:pathPattern=".*\\.nzb" />
+				<data android:scheme="https" android:host="*" android:pathPattern=".*\\.nzb" />
+				<data android:scheme="file" android:host="*" android:pathPattern=".*\\.nzb" />
+				<data android:scheme="content" android:host="*" android:pathPattern=".*\\.nzb" />
+			</intent-filter>
 		</activity>
 
 		<activity android:name=".SettingsActivity" />

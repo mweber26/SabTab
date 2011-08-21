@@ -2,10 +2,13 @@
 <resources>
 	<string name="app_name">SABTab</string>
 
-	<string name="header_idle">Idle</string>
-	<string name="header_paused">Paused</string>
-	<string name="header_running">Running</string>
-	<string name="header_connecting">Connecting</string>
+	<string name="no_items">No items</string>
+
+	<string name="status_idle">IDLE</string>
+	<string name="status_paused">PAUSED</string>
+	<string name="status_running">RUNNING : %s</string>
+	<string name="status_connecting">CONNECTING</string>
+	<string name="status_error">ERROR</string>
 
 	<string name="tab_queue">Queue</string>
 	<string name="tab_history">History</string>

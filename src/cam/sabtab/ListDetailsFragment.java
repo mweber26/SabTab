@@ -42,6 +42,7 @@ public abstract class ListDetailsFragment<T extends SabEntity> extends Fragment
 	private ListView listView;
 	private ItemAdapter listAdapter;
 	private ProgressBar listProgress;
+	private TextView listNoItems;
 	private View detailsFrame;
 	private String restoreSelection;
 
@@ -177,6 +178,10 @@ public abstract class ListDetailsFragment<T extends SabEntity> extends Fragment
 
 		listView = (ListView)v.findViewById(R.id.list);
 		listProgress = (ProgressBar)v.findViewById(R.id.list_progress);
+		listNoItems = (TextView)v.findViewById(R.id.list_noitems);
+
+		listProgress.setVisibility(View.INVISIBLE);
+		listNoItems.setVisibility(View.VISIBLE);
 
 		listView.setAdapter(listAdapter);
 		listView.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
@@ -319,6 +324,7 @@ public abstract class ListDetailsFragment<T extends SabEntity> extends Fragment
 		protected void onPreExecute()
 		{
 			listProgress.setVisibility(View.VISIBLE);
+			listNoItems.setVisibility(View.INVISIBLE);
 		}
 
 		protected void onPostExecute(List<T> result)
@@ -348,6 +354,12 @@ public abstract class ListDetailsFragment<T extends SabEntity> extends Fragment
 
 			//hide the spinner
 			listProgress.setVisibility(View.INVISIBLE);
+
+			//no items
+			if(listAdapter.getCount() == 0)
+				listNoItems.setVisibility(View.VISIBLE);
+			else
+				listNoItems.setVisibility(View.INVISIBLE);
 		}
 	}
 }

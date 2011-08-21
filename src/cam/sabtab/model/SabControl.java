@@ -3,9 +3,14 @@ package cam.sabtab.model;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.File;
+import java.io.DataOutputStream;
+import java.io.DataInputStream;
+import java.io.FileInputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.net.HttpURLConnection;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Collections;
@@ -16,6 +21,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.content.Context;
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
@@ -24,23 +31,73 @@ import android.util.Log;
 public class SabControl
 {
 	private static final String TAG = "SabControl";
+	private SharedPreferences prefs;
 	private Context context;
-	private String url;
 	private SabControlEvent event;
+	private String error;
 
 	public SabControl(Context context, SabControlEvent event)
 	{
+		this.prefs = PreferenceManager.getDefaultSharedPreferences(context);
 		this.event = event;
-
-		//url = "http://192.168.2.2/sab/api?apikey=106f7d01dda207eb7907b30edb124dc8";
-		url = "http://192.168.0.50:8080/sab/api?apikey=106f7d01dda207eb7907b30edb124dc8";
 	}
 
-	public Queue fetchQueue(int offset, int count)
+	public String getLastError()
+	{
+		return error;
+	}
+
+	private String getUrl()
+	{
+		//url = "http://192.168.2.2/sab/api?apikey=106f7d01dda207eb7907b30edb124dc8";
+		//url = "http://192.168.0.50:8080/sab/api?apikey=106f7d01dda207eb7907b30edb124dc8";
+
+		String url = prefs.getString("sabserver", "");
+		if(url.length() == 0)
+		{
+			error = "Invalid SABnzbd server URL.  Please verify your settings are correct.";
+			return null;
+		}
+
+		String apikey = prefs.getString("sabapikey", "");
+		if(apikey.length() == 0)
+		{
+			error = "Invalid SABnzbd API key.  Please verify your settings are correct.";
+			return null;
+		}
+
+		if(url.endsWith("/"))
+			return url + "api?apikey=" + apikey;
+		else
+			return url + "/api?apikey=" + apikey;
+	}
+
+	private void processException(Exception e)
+	{
+		e.printStackTrace();
+
+		if(e instanceof java.net.UnknownHostException)
+			error = "Invalid SABnzbd hostname.  Please verify your settings are correct.";
+		else if(e instanceof java.net.MalformedURLException)
+			error = "Malformed SABnzbd URL.  Please verify your settings are correct.";
+		else if(e instanceof java.lang.NullPointerException)
+			error = "Malformed SABnzbd URL.  Please verify your settings are correct.";
+		else if(e instanceof java.io.FileNotFoundException)
+			error = "Invalid SABnzbd path.  Please verify your settings are correct.";
+		else if(e instanceof java.net.ConnectException)
+			error = "Cannot connect to SABnzbd host.  Please verify your settings are correct.";
+		else
+			error = e.getMessage();
+	}
+
+	private String makeRequest(String request, boolean isJson)
 	{
 		try
 		{
-			String connUrl = url + "&start=" + offset + "&limit=" + count + "&mode=queue&output=json";
+			String baseUrl = getUrl();
+			if(baseUrl == null) return null;
+
+			String connUrl = baseUrl + "&" + request;
 			URL src = new URL(connUrl);
 
 			URLConnection tc = src.openConnection();
@@ -50,10 +107,51 @@ public class SabControl
 			while((line = in.readLine()) != null)
 				json = json + line;
 
+			if(json.trim().equals("error: API Key Incorrect"))
+			{
+				error = "Invalid SABnzbd API key.  Please verify your settings are correct.";
+				return null;
+			}
+
+			if(isJson)
+			{
+				JSONObject ret = new JSONObject(json);
+				String retErr = ret.optString("error");
+
+				if(retErr != null && retErr.length() > 0)
+				{
+			 		if(retErr.equals("API Key Incorrect"))
+						error = "Invalid SABnzbd API key.  Please verify your settings are correct.";
+					else
+						error = retErr;
+	
+					return null;
+				}
+			}
+
+			//successful, so far so clear the error
+			error = null;
+
+			return json;
+		} catch(Exception e) {
+			processException(e);
+			return null;
+		}
+	}
+
+	public Queue fetchQueue(int offset, int count)
+	{
+		try
+		{
+			String json = makeRequest("start="+offset+"&limit="+count+"&mode=queue&output=json",
+				true);
+			if(json == null) return null;
+
 			JSONObject queue = new JSONObject(json).getJSONObject("queue");
 			Queue ret = new Queue(queue);
 			return ret;
-		} catch(Exception e) {
+		} catch(JSONException e) {
+			error = "Error connecting to SABnzbd, cannot process queue download.";
 			e.printStackTrace();
 			return null;
 		}
@@ -65,15 +163,9 @@ public class SabControl
 
 		try
 		{
-			String connUrl = url + "&start=" + offset + "&limit=" + count + "&mode=history&output=json";
-			URL src = new URL(connUrl);
-
-			URLConnection tc = src.openConnection();
-			BufferedReader in = new BufferedReader(new InputStreamReader(tc.getInputStream()));
-
-			String json = "", line;
-			while((line = in.readLine()) != null)
-				json = json + line;
+			String json = makeRequest("start="+offset+"&limit="+count+"&mode=history&output=json",
+				true);
+			if(json == null) return null;
 
 			JSONObject history = new JSONObject(json).getJSONObject("history");
 			JSONArray slots = history.getJSONArray("slots");
@@ -85,7 +177,8 @@ public class SabControl
 			}
 
 			return ret;
-		} catch(Exception e) {
+		} catch(JSONException e) {
+			error = "Error connecting to SABnzbd, cannot process history download.";
 			e.printStackTrace();
 			return null;
 		}
@@ -97,15 +190,8 @@ public class SabControl
 
 		try
 		{
-			String connUrl = url + "&mode=warnings&output=json";
-			URL src = new URL(connUrl);
-
-			URLConnection tc = src.openConnection();
-			BufferedReader in = new BufferedReader(new InputStreamReader(tc.getInputStream()));
-
-			String json = "", line;
-			while((line = in.readLine()) != null)
-				json = json + line;
+			String json = makeRequest("mode=warnings&output=json", true);
+			if(json == null) return null;
 
 			JSONArray slots = new JSONObject(json).getJSONArray("warnings");
 			for(int i = 0; i < slots.length(); i++)
@@ -113,7 +199,12 @@ public class SabControl
 
 			Collections.reverse(ret);
 			return ret;
-		} catch(Exception e) {
+		} catch(JSONException e) {
+			error = "Error connecting to SABnzbd, cannot process warnings download.";
+			e.printStackTrace();
+			return null;
+		} catch(ParseException e) {
+			error = "Error connecting to SABnzbd, cannot process warnings download.";
 			e.printStackTrace();
 			return null;
 		}
@@ -121,23 +212,13 @@ public class SabControl
 
 	private boolean sendCommand(String cmd)
 	{
-		try
-		{
-			String connUrl = url + "&" + cmd;
-			URL src = new URL(connUrl);
+		String ret = makeRequest(cmd, false);
+		if(ret == null) return false;
 
-			URLConnection tc = src.openConnection();
-			BufferedReader in = new BufferedReader(new InputStreamReader(tc.getInputStream()));
-			String line = in.readLine();
+		Log.v(TAG, "ret = " + ret);
+		if(event != null) event.refresh();
 
-			Log.v(TAG, "ret = " + line);
-			if(event != null) event.refresh();
-
-			return true;
-		} catch(Exception e) {
-			e.printStackTrace();
-			return false;
-		}
+		return true;
 	}
 
 	public void resumeQueue()
@@ -323,5 +404,103 @@ public class SabControl
       };
 
 		task.execute();
+	}
+
+	public void uploadFile(final String file)
+	{
+		Log.v(TAG, "uploadFile(" + file + ")");
+
+		AsyncTask<Void, Void, Void> task = new AsyncTask<Void, Void, Void>() {
+			protected Void doInBackground(Void... unused) {
+				String baseUrl = getUrl();
+				if(baseUrl == null) return null;
+
+				postFile(baseUrl + "&mode=addfile", file);
+				return null;
+			}
+      };
+
+		task.execute();
+	}
+
+	private boolean postFile(String urlServer, String filepath)
+	{
+		HttpURLConnection connection = null;
+		DataOutputStream outputStream = null;
+		DataInputStream inputStream = null;
+
+		String lineEnd = "\r\n";
+		String twoHyphens = "--";
+		String boundary =  "*****";
+		boolean ret = false;
+
+		int bytesRead, bytesAvailable, bufferSize;
+		byte[] buffer;
+		int maxBufferSize = 1*1024*1024;
+
+		try
+		{
+			File file = new File(filepath);
+			FileInputStream fileInputStream = new FileInputStream(file);
+
+			URL url = new URL(urlServer);
+			connection = (HttpURLConnection)url.openConnection();
+
+			connection.setDoInput(true);
+			connection.setDoOutput(true);
+			connection.setUseCaches(false);
+
+			connection.setRequestMethod("POST");
+
+			connection.setRequestProperty("Connection", "Keep-Alive");
+			connection.setRequestProperty("Content-Type", "multipart/form-data;boundary="+boundary);
+
+			outputStream = new DataOutputStream( connection.getOutputStream() );
+			outputStream.writeBytes(twoHyphens + boundary + lineEnd);
+			outputStream.writeBytes("Content-Disposition: form-data;" +
+				" name=\"nzbfile\";filename=\"" + file.getName() +"\"" + lineEnd);
+			outputStream.writeBytes(lineEnd);
+
+			bytesAvailable = fileInputStream.available();
+			bufferSize = Math.min(bytesAvailable, maxBufferSize);
+			buffer = new byte[bufferSize];
+
+			bytesRead = fileInputStream.read(buffer, 0, bufferSize);
+			while(bytesRead > 0)
+			{
+				outputStream.write(buffer, 0, bufferSize);
+				bytesAvailable = fileInputStream.available();
+				bufferSize = Math.min(bytesAvailable, maxBufferSize);
+				bytesRead = fileInputStream.read(buffer, 0, bufferSize);
+			}
+
+			outputStream.writeBytes(lineEnd);
+			outputStream.writeBytes(twoHyphens + boundary + twoHyphens + lineEnd);
+
+			//serverResponseCode = connection.getResponseCode();
+			String serverResponseMessage = connection.getResponseMessage();
+			Log.v(TAG, "response = " + serverResponseMessage);
+			if(serverResponseMessage.toLowerCase().equals("ok"))
+			{
+				ret = true;
+
+				if(event != null) event.refresh();
+			}
+			else
+			{
+				error = serverResponseMessage;
+				ret = false;
+			}
+
+			fileInputStream.close();
+			outputStream.flush();
+			outputStream.close();
+
+			return ret;
+		}
+		catch(Exception e) {
+			processException(e);
+			return false;
+		}
 	}
 }

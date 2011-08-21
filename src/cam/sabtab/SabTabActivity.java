@@ -24,6 +24,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
+import android.widget.TextView;
 import android.util.Log;
 
 public class SabTabActivity extends Activity
@@ -33,6 +34,7 @@ public class SabTabActivity extends Activity
 	private MenuItem pauseMenu;
 	private MenuItem resumeMenu;
 	private MenuItem settingsMenu;
+	private TextView statusText;
 	private SabControl sab;
 	private Queue queue;
 	private Handler handler = new Handler(); 
@@ -47,6 +49,7 @@ public class SabTabActivity extends Activity
 
 		//create the activity view
 		setContentView(R.layout.main);
+		statusText = (TextView)findViewById(R.id.status);
 
 		//setup the sab controller with a refresher
 		this.sab = new SabControl(getApplicationContext(), new SabControlEvent() {
@@ -62,6 +65,15 @@ public class SabTabActivity extends Activity
 		initTabs();
 		if(savedInstanceState != null)
 			loadState(savedInstanceState);
+
+		//did we start with an intent to add an nzb?
+		Intent intent = getIntent();
+		if(intent.getAction().equals(Intent.ACTION_VIEW))
+		{
+			Log.v(TAG, "ACTION_VIEW");
+			Log.v(TAG, intent.getData().getPath());
+			sab.uploadFile(intent.getData().getPath());
+		}
 	}
 
 	@Override protected void onPause()
@@ -164,16 +176,30 @@ public class SabTabActivity extends Activity
 				}
 		});
 
-		updateMenus();
+		updateState();
 		return true;
 	}
 
-	private void updateMenus()
+	private void updateState()
 	{
 		ActionBar bar = getActionBar();
 
-		if(queue != null)
+		if(sab.getLastError() != null && sab.getLastError().length() > 0)
 		{
+			statusText.setText(getString(R.string.status_error));
+			resumeMenu.setVisible(false);
+			pauseMenu.setVisible(false);
+		}
+		else if(queue != null)
+		{
+			if(queue.isPaused())
+				statusText.setText(getString(R.string.status_paused));
+			else if(queue.isIdle())
+				statusText.setText(getString(R.string.status_idle));
+			else
+				statusText.setText(String.format(getString(R.string.status_running),
+					queue.getDownloadSpeed()));
+
 			if(queue.isPaused())
 			{
 				resumeMenu.setVisible(true);
@@ -188,7 +214,19 @@ public class SabTabActivity extends Activity
 		else
 		{
 			resumeMenu.setVisible(false);
-			pauseMenu.setVisible(true);
+			pauseMenu.setVisible(false);
+			statusText.setText(getString(R.string.status_error));
+		}
+	}
+
+	public void onStatusClick(View v)
+	{
+		//show the error if we are in the error state
+		if(sab.getLastError() != null && sab.getLastError().length() > 0)
+		{
+			Toast toast = Toast.makeText(getApplicationContext(), sab.getLastError(),
+				Toast.LENGTH_LONG);
+			toast.show();
 		}
 	}
 
@@ -219,10 +257,9 @@ public class SabTabActivity extends Activity
 		protected void onPostExecute(Queue result)
 		{
 			if(result != null)
-			{
 				queue = result;
-				updateMenus();
-			}
+
+			updateState();
 		}
 	}
 
