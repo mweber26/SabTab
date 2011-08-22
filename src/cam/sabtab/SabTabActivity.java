@@ -33,7 +33,6 @@ public class SabTabActivity extends Activity
 	private boolean paused = false;
 	private MenuItem pauseMenu;
 	private MenuItem resumeMenu;
-	private MenuItem settingsMenu;
 	private TextView statusText;
 	private SabControl sab;
 	private Queue queue;
@@ -130,23 +129,18 @@ public class SabTabActivity extends Activity
 
 		Fragment queueTab = fragmentManager.findFragmentByTag("queue");
 	 	Fragment historyTab = fragmentManager.findFragmentByTag("history");
-	 	Fragment statusTab = fragmentManager.findFragmentByTag("status");
 
 		if(queueTab == null) { queueTab = new TabQueueFragment(); Log.v(TAG, "new queue tab"); }
 		if(historyTab == null) { historyTab = new TabHistoryFragment(); Log.v(TAG, "new history tab"); }
-		if(statusTab == null) { statusTab = new TabStatusFragment(); Log.v(TAG, "new status tab"); }
 
 		bar.addTab(bar.newTab().setText(R.string.tab_queue).
 			setTabListener(new TabListener(queueTab, "queue")));
 		bar.addTab(bar.newTab().setText(R.string.tab_history).
 			setTabListener(new TabListener(historyTab, "history")));
-		bar.addTab(bar.newTab().setText(R.string.tab_status).
-			setTabListener(new TabListener(statusTab, "status")));
 
 		FragmentTransaction ft = fragmentManager.beginTransaction();
 		if(queueTab.isAdded()) ft.hide(queueTab);
 		if(historyTab.isAdded()) ft.hide(historyTab);
-		if(statusTab.isAdded()) ft.hide(statusTab);
 		ft.commit();
 
 		Log.v(TAG, "initTabs() done");
@@ -159,8 +153,12 @@ public class SabTabActivity extends Activity
 
 		pauseMenu = menu.findItem(R.id.menu_pause);
 		resumeMenu = menu.findItem(R.id.menu_resume);
-		settingsMenu = menu.findItem(R.id.menu_settings);
+
+		MenuItem settingsMenu = menu.findItem(R.id.menu_settings);
 		settingsMenu.setIntent(new Intent(this, SettingsActivity.class));
+
+		MenuItem warningsMenu = menu.findItem(R.id.menu_warnings);
+		warningsMenu.setIntent(new Intent(this, WarningsActivity.class));
 
 		pauseMenu.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
 				public boolean onMenuItemClick(MenuItem item) {
@@ -215,7 +213,7 @@ public class SabTabActivity extends Activity
 		{
 			resumeMenu.setVisible(false);
 			pauseMenu.setVisible(false);
-			statusText.setText(getString(R.string.status_error));
+			statusText.setText(getString(R.string.status_connecting));
 		}
 	}
 

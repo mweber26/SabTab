@@ -10,6 +10,10 @@
 		android:title="@string/menu_resume"
 		android:showAsAction="ifRoom|withText" />
 
+	<item android:id="@+id/menu_warnings"
+		android:title="@string/menu_warnings"
+		android:showAsAction="withText" />
+
 	<item android:id="@+id/menu_settings"
 		android:title="@string/menu_settings"
 		android:showAsAction="withText" />

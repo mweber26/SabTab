@@ -12,11 +12,10 @@
 
 	<string name="tab_queue">Queue</string>
 	<string name="tab_history">History</string>
-	<string name="tab_settings">Settings</string>
-	<string name="tab_status">Status</string>
 
 	<string name="menu_pause">Pause queue</string>
 	<string name="menu_resume">Resume queue</string>
+	<string name="menu_warnings">Latest warnings</string>
 	<string name="menu_settings">Settings</string>
 
 	<string name="history_list_retry">Retry</string>
@@ -29,9 +28,9 @@
 	<string name="queue_list_moveup">Move Up</string>
 	<string name="queue_list_movedown">Move Down</string>
 	<string name="queue_list_cancel">Cancel download</string>
-	<string name="queue_list_change_priority">Change priority</string>
+	<!--<string name="queue_list_change_priority">Change priority</string>
 	<string name="queue_list_change_script">Change script</string>
-	<string name="queue_list_change_category">Change category</string>
+	<string name="queue_list_change_category">Change category</string>-->
 
 	<string name="priority_force">Force</string>
 	<string name="priority_high">High</string>
