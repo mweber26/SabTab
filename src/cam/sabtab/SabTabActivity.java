@@ -138,9 +138,11 @@ public class SabTabActivity extends Activity
 		bar.addTab(bar.newTab().setText(R.string.tab_history).
 			setTabListener(new TabListener(historyTab, "history")));
 
+		int tabIndex = bar.getSelectedTab().getPosition();
+
 		FragmentTransaction ft = fragmentManager.beginTransaction();
-		if(queueTab.isAdded()) ft.hide(queueTab);
-		if(historyTab.isAdded()) ft.hide(historyTab);
+		if(queueTab.isAdded() && tabIndex != 0) ft.hide(queueTab);
+		if(historyTab.isAdded() && tabIndex != 1) ft.hide(historyTab);
 		ft.commit();
 
 		Log.v(TAG, "initTabs() done");

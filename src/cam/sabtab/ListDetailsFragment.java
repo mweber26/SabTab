@@ -12,6 +12,7 @@ import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
@@ -61,9 +62,9 @@ public abstract class ListDetailsFragment<T extends SabEntity> extends Fragment
 
 	@Override public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle state)
 	{
+		Log.v(TAG, "onCreateView");
 		this.inflater = inflater;
 
-		Log.v(TAG, "onCreateView : state==null? " + (state == null));
 		View v = inflater.inflate(getResourceViewId(), container, false);
 
 		//setup the sab controller with a refresher
@@ -86,11 +87,15 @@ public abstract class ListDetailsFragment<T extends SabEntity> extends Fragment
 
    @Override public void onActivityCreated(Bundle state)
 	{
+		Log.v(TAG, "onActivityCreated");
 		super.onActivityCreated(state);
-		Log.v(TAG, "onActivityCreated : state==null? " + (state == null));
 
-		if(state != null)
-			restoreSelection = state.getString("selected_id");
+		SharedPreferences settings = getActivity().getPreferences(Activity.MODE_PRIVATE);
+		restoreSelection = settings.getString(getClass().getName() + ":selected_id", null);
+		if(restoreSelection != null)
+			Log.v(TAG, "  restoreSelection = " + restoreSelection);
+		else
+			Log.v(TAG, "  restoreSelection = null");
 	}
 
 	@Override public void onHiddenChanged(boolean hidden)
@@ -114,6 +119,13 @@ public abstract class ListDetailsFragment<T extends SabEntity> extends Fragment
 		super.onPause();
 		Log.v(TAG, "onPause(" + getClass().getName() + ")");
 		paused = true;
+
+		SharedPreferences settings = getActivity().getPreferences(Activity.MODE_PRIVATE);
+		T item = getCurrentItem();
+		if(item != null)
+			settings.edit().putString(getClass().getName() + ":selected_id", item.getId()).commit();
+		else
+			settings.edit().putString(getClass().getName() + ":selected_id", null).commit();
 	}
 
 	@Override public void onResume()
@@ -136,15 +148,6 @@ public abstract class ListDetailsFragment<T extends SabEntity> extends Fragment
 		super.onDestroy();
 		Log.v(TAG, "onDestroy(" + getClass().getName() + ")");
 		handler.removeCallbacks(updateListTask);
-	}
-
-	@Override public void onSaveInstanceState(Bundle outState)
-	{
-		super.onSaveInstanceState(outState);
-
-		T item = getCurrentItem();
-		if(item != null)
-			outState.putString("selected_id", item.getId());
 	}
 
 	protected T getCurrentItem()
@@ -205,7 +208,8 @@ public abstract class ListDetailsFragment<T extends SabEntity> extends Fragment
 	private void listSelectIndex(int index)
 	{
 		listUnselectAll();
-		if(index >= 0 && index <= listAdapter.getCount())
+
+		if(index >= 0 && index < listAdapter.getCount())
 		{
 			listView.setItemChecked(index, true);
 			updateDetailsInternal((T)listAdapter.getItem(index));
@@ -225,7 +229,7 @@ public abstract class ListDetailsFragment<T extends SabEntity> extends Fragment
 		{
 			T item =  (T)listAdapter.getItem(i);
 
-			Log.v(TAG, " checking " + ((SabEntity)item).getId());
+			//Log.v(TAG, " checking " + ((SabEntity)item).getId());
 			if(item != null && (item instanceof SabEntity) && ((SabEntity)item).getId().equals(id))
 			{
 				index = i;
@@ -233,7 +237,7 @@ public abstract class ListDetailsFragment<T extends SabEntity> extends Fragment
 			}
 		}
 
-		Log.v(TAG, "got index " + index);
+		//Log.v(TAG, "got index " + index);
 		listSelectIndex(index);
 	}
 
@@ -286,9 +290,12 @@ public abstract class ListDetailsFragment<T extends SabEntity> extends Fragment
 
 	private Runnable updateSelectedIdTask = new Runnable() {
 		public void run() {
-			Log.v(TAG, "restoring selection of " + restoreSelection);
-			listSelectId(restoreSelection);
-			restoreSelection = null;
+			if(restoreSelection != null)
+			{
+				Log.v(TAG, "restoring selection of " + restoreSelection);
+				listSelectId(restoreSelection);
+				restoreSelection = null;
+			}
 		}
 	};
 

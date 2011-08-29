@@ -1,32 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-	android:orientation="vertical"
+	android:orientation="horizontal"
 	android:layout_width="fill_parent"
 	android:layout_height="fill_parent"
-	>
-
-	<LinearLayout
-		android:orientation="horizontal"
-		android:layout_width="fill_parent"
+>
+	<RelativeLayout
+		android:layout_width="0dp"
+		android:layout_weight="1"
 		android:layout_height="fill_parent"
 	>
-		<RelativeLayout
-			android:layout_width="0dp"
-			android:layout_weight="1"
-			android:layout_height="fill_parent"
-		>
-			<include layout="@layout/queue_list" />
-		</RelativeLayout>
+		<include layout="@layout/queue_list" />
+	</RelativeLayout>
 
-		<RelativeLayout
-			android:layout_width="0dp"
-			android:layout_weight="1"
-			android:layout_height="fill_parent"
-			android:layout_marginLeft="10dp"
-			android:id="@+id/details"
-			android:visibility="invisible"
-		>
-			<include layout="@layout/queue_details" />
-		</RelativeLayout>
-	</LinearLayout>
+	<RelativeLayout
+		android:layout_width="0dp"
+		android:layout_weight="1"
+		android:layout_height="fill_parent"
+		android:layout_marginLeft="10dp"
+		android:id="@+id/details"
+		android:visibility="invisible"
+	>
+		<include layout="@layout/queue_details" />
+	</RelativeLayout>
 </LinearLayout>
