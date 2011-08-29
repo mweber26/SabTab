@@ -6,6 +6,8 @@ import cam.sabtab.model.SabControlEvent;
 
 import java.util.List;
 
+import android.app.Dialog;
+import android.app.AlertDialog;
 import android.app.Activity;
 import android.app.ActionBar;
 import android.app.ActionBar.Tab;
@@ -14,6 +16,8 @@ import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.content.DialogInterface;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
@@ -228,6 +232,66 @@ public class SabTabActivity extends Activity
 				Toast.LENGTH_LONG);
 			toast.show();
 		}
+	}
+
+	@Override public boolean onOptionsItemSelected(MenuItem item)
+	{
+		switch(item.getItemId())
+		{
+			case android.R.id.home:
+			case R.id.about:
+				showAboutDialog();
+				return true;
+			case R.id.menu_speed:
+				showSpeedDialog();
+				return true;
+			default:
+				return super.onOptionsItemSelected(item);
+		}
+	}
+
+	private void showAboutDialog()
+	{
+		try
+		{
+			String sabVersion;
+			String tabVersion = getPackageManager().getPackageInfo(getPackageName(),
+				PackageManager.GET_META_DATA).versionName;
+
+			if(queue == null)
+				sabVersion = "N/A";
+			else
+				sabVersion = queue.getVersion();
+
+			Dialog dialog = new Dialog(this);
+			dialog.setContentView(R.layout.about);
+			dialog.setTitle("About");
+			TextView ver1 = (TextView)dialog.findViewById(R.id.tab_version);
+			ver1.setText("SabTab version : " + tabVersion);
+			TextView ver2 = (TextView)dialog.findViewById(R.id.sab_version);
+			ver2.setText("SABnzbd version : " + sabVersion);
+			dialog.show();
+		} catch(Exception e) {
+		}
+	}
+
+	private void showSpeedDialog()
+	{
+		final CharSequence[] items = { "Unlimited", "1024 kB/sec", "768 kB/sec",
+			"512 kB/sec", "256 kB/sec", "128 kB/sec", "64 kB/sec", "32 kB/sec", 
+			"Custom speed"};
+
+		AlertDialog.Builder builder = new AlertDialog.Builder(this);
+		builder.setTitle("Change download speed limit");
+
+		builder.setItems(items, new DialogInterface.OnClickListener() {
+			public void onClick(DialogInterface dialog, int item) {
+				Toast.makeText(SabTabActivity.this, items[item], Toast.LENGTH_SHORT).show();
+			}
+		});
+
+		AlertDialog dialog = builder.create();
+		dialog.show();
 	}
 
 	//start the download task and re-ping ourselves for continual updates

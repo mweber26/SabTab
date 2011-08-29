@@ -64,6 +64,7 @@ public class Queue
 	public int getNumberOfSlots() { return numSlots; }
 	public ArrayList<QueueItem> getSlots() { return slots; }
 	public String getStatus() { return status; }
+	public String getVersion() { return version; }
 
 	public ArrayList<String> getScripts() { return scripts; }
 	public ArrayList<String> getCategories() { return categories; }
