@@ -5,14 +5,14 @@
 		android:title="@string/menu_pause"
 		android:showAsAction="ifRoom|withText" />
 
-	<item android:id="@+id/menu_speed"
-		android:icon="@drawable/ic_speed_limit"
-		android:title="@string/menu_speed_limit"
-		android:showAsAction="ifRoom|withText" />
-
 	<item android:id="@+id/menu_resume"
 		android:icon="@drawable/ic_media_play"
 		android:title="@string/menu_resume"
+		android:showAsAction="ifRoom|withText" />
+
+	<item android:id="@+id/menu_speed"
+		android:icon="@drawable/ic_speed_limit"
+		android:title="@string/menu_speed_limit"
 		android:showAsAction="ifRoom|withText" />
 
 	<item android:id="@+id/menu_warnings"

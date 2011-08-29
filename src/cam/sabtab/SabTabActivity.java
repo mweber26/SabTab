@@ -37,6 +37,7 @@ public class SabTabActivity extends Activity
 	private boolean paused = false;
 	private MenuItem pauseMenu;
 	private MenuItem resumeMenu;
+	private MenuItem speedMenu;
 	private TextView statusText;
 	private SabControl sab;
 	private Queue queue;
@@ -159,6 +160,7 @@ public class SabTabActivity extends Activity
 
 		pauseMenu = menu.findItem(R.id.menu_pause);
 		resumeMenu = menu.findItem(R.id.menu_resume);
+		speedMenu = menu.findItem(R.id.menu_speed);
 
 		MenuItem settingsMenu = menu.findItem(R.id.menu_settings);
 		settingsMenu.setIntent(new Intent(this, SettingsActivity.class));
@@ -191,6 +193,7 @@ public class SabTabActivity extends Activity
 		if(sab.getLastError() != null && sab.getLastError().length() > 0)
 		{
 			statusText.setText(getString(R.string.status_error));
+			speedMenu.setVisible(false);
 			resumeMenu.setVisible(false);
 			pauseMenu.setVisible(false);
 		}
@@ -203,6 +206,13 @@ public class SabTabActivity extends Activity
 			else
 				statusText.setText(String.format(getString(R.string.status_running),
 					queue.getDownloadSpeed()));
+
+			speedMenu.setVisible(true);
+
+			if(queue.getSpeedLimit() == 0)
+				speedMenu.setTitle(getString(R.string.speed_unlimited));
+			else
+				speedMenu.setTitle(queue.getSpeedLimitText());
 
 			if(queue.isPaused())
 			{
@@ -217,6 +227,7 @@ public class SabTabActivity extends Activity
 		}
 		else
 		{
+			speedMenu.setVisible(false);
 			resumeMenu.setVisible(false);
 			pauseMenu.setVisible(false);
 			statusText.setText(getString(R.string.status_connecting));
@@ -265,11 +276,13 @@ public class SabTabActivity extends Activity
 
 			Dialog dialog = new Dialog(this);
 			dialog.setContentView(R.layout.about);
-			dialog.setTitle("About");
+			dialog.setTitle(getString(R.string.about_title));
+
 			TextView ver1 = (TextView)dialog.findViewById(R.id.tab_version);
-			ver1.setText("SabTab version : " + tabVersion);
+			ver1.setText(getString(R.string.about_tab_version) + " " + tabVersion);
 			TextView ver2 = (TextView)dialog.findViewById(R.id.sab_version);
-			ver2.setText("SABnzbd version : " + sabVersion);
+			ver2.setText(getString(R.string.about_sab_version) + " " + sabVersion);
+
 			dialog.show();
 		} catch(Exception e) {
 		}
@@ -277,21 +290,35 @@ public class SabTabActivity extends Activity
 
 	private void showSpeedDialog()
 	{
-		final CharSequence[] items = { "Unlimited", "1024 kB/sec", "768 kB/sec",
-			"512 kB/sec", "256 kB/sec", "128 kB/sec", "64 kB/sec", "32 kB/sec", 
-			"Custom speed"};
+		final CharSequence[] items = {
+			getString(R.string.speed_unlimited),
+			"1024 kB/sec", "768 kB/sec", "512 kB/sec",
+			"256 kB/sec", "128 kB/sec", "64 kB/sec", "32 kB/sec", 
+			getString(R.string.speed_custom) };
+		final int[] speeds = { 
+			0,
+			1024, 768, 512,
+			256, 128, 64, 32 };
 
 		AlertDialog.Builder builder = new AlertDialog.Builder(this);
-		builder.setTitle("Change download speed limit");
+		builder.setTitle(getString(R.string.speed_title));
 
 		builder.setItems(items, new DialogInterface.OnClickListener() {
 			public void onClick(DialogInterface dialog, int item) {
-				Toast.makeText(SabTabActivity.this, items[item], Toast.LENGTH_SHORT).show();
+				if(item == items.length - 1)
+					showCustomSpeedDialog();
+				else
+					sab.setDownloadLimit(speeds[item]);
 			}
 		});
 
 		AlertDialog dialog = builder.create();
 		dialog.show();
+	}
+
+	private void showCustomSpeedDialog()
+	{
+		Toast.makeText(this, "custom speed dialog", Toast.LENGTH_SHORT).show();
 	}
 
 	//start the download task and re-ping ourselves for continual updates

@@ -390,6 +390,20 @@ public class SabControl
 		}
 	}
 
+	public void setDownloadLimit(final int speed)
+	{
+		Log.v(TAG, "setDownloadLimit(" + speed + ")");
+
+		AsyncTask<Void, Void, Void> task = new AsyncTask<Void, Void, Void>() {
+			protected Void doInBackground(Void... unused) {
+				sendCommand("mode=config&name=speedlimit&value=" + speed);
+				return null;
+			}
+     	};
+
+		task.execute();
+	}
+
 	public void deleteItem(final QueueItem item)
 	{
 		if(item == null) return;

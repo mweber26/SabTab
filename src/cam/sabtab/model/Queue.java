@@ -31,9 +31,15 @@ public class Queue
 		version = queue.getString("version");
 		totalMB = queue.getDouble("mb");
 		leftMB = queue.getDouble("mbleft");
-		speedLimit = queue.getInt("speedlimit");
 		numSlots = queue.getInt("noofslots");
 		currentSpeed = queue.getInt("kbpersec") * 1024;
+
+		if(queue.getString("speedlimit") == null)
+			speedLimit = 0;
+		else if(queue.getString("speedlimit").length() == 0)
+			speedLimit = 0;
+		else
+			speedLimit = queue.getInt("speedlimit");
 
 		slots = new ArrayList<QueueItem>();
 		JSONArray slotArray = queue.getJSONArray("slots");
@@ -65,6 +71,8 @@ public class Queue
 	public ArrayList<QueueItem> getSlots() { return slots; }
 	public String getStatus() { return status; }
 	public String getVersion() { return version; }
+	public int getSpeedLimit() { return speedLimit; }
+	public String getSpeedLimitText() { return speedLimit + " kB/sec"; }
 
 	public ArrayList<String> getScripts() { return scripts; }
 	public ArrayList<String> getCategories() { return categories; }
