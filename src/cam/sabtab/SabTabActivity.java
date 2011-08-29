@@ -298,6 +298,10 @@ public class SabTabActivity extends Activity
 
 		public void onTabReselected(ActionBar.Tab tab, FragmentTransaction ft)
 		{
+			Log.v(TAG, "onTabReselected(" + mFragment.getClass().getName() + ", " + tag + ")");
+
+			if(tag.equals("queue")) ((TabQueueFragment)mFragment).reload();
+			if(tag.equals("history")) ((TabHistoryFragment)mFragment).reload();
 		}
 	}
 }

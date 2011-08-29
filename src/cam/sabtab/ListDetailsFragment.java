@@ -150,6 +150,11 @@ public abstract class ListDetailsFragment<T extends SabEntity> extends Fragment
 		handler.removeCallbacks(updateListTask);
 	}
 
+	public void reload()
+	{
+		handler.post(updateListTask);
+	}
+
 	protected T getCurrentItem()
 	{
 		int index = listView.getCheckedItemPosition();
@@ -212,6 +217,9 @@ public abstract class ListDetailsFragment<T extends SabEntity> extends Fragment
 		if(index >= 0 && index < listAdapter.getCount())
 		{
 			listView.setItemChecked(index, true);
+			if(index < listView.getFirstVisiblePosition() || index > listView.getLastVisiblePosition())
+				listView.smoothScrollToPositionFromTop(index, 100);
+
 			updateDetailsInternal((T)listAdapter.getItem(index));
 		}
 		else
