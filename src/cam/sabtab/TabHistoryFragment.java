@@ -6,15 +6,17 @@ import cam.sabtab.ListDetailsFragment;
 import java.util.List;
 
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.ContextMenu;
 import android.view.MenuItem;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.Spinner;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
+import android.graphics.Typeface;
+import android.util.TypedValue;
 import android.util.Log;
 
 public class TabHistoryFragment extends ListDetailsFragment<HistoryItem>
@@ -51,8 +53,57 @@ public class TabHistoryFragment extends ListDetailsFragment<HistoryItem>
 
 	protected void updateDetails(View v, HistoryItem item)
 	{
-		TextView detailsScriptLog = (TextView)v.findViewById(R.id.detail_script_log);
-		detailsScriptLog.setText(item.getScriptLog());
+		TextView nzbid = (TextView)v.findViewById(R.id.details_id);
+		TextView nzbname = (TextView)v.findViewById(R.id.details_name);
+		TextView status = (TextView)v.findViewById(R.id.details_status);
+		TextView size = (TextView)v.findViewById(R.id.details_size);
+		TextView completed = (TextView)v.findViewById(R.id.details_completed);
+		RelativeLayout details = (RelativeLayout)v.findViewById(R.id.details_list);
+
+		nzbid.setText(item.getId());
+		nzbname.setText(item.getName());
+		status.setText(item.getStatus());
+		size.setText(item.getSize());
+		completed.setText(item.getCompleted());
+
+		details.removeAllViews();
+
+		int id = 1;
+		for(int i = 0; i < item.getStageNames().size(); i++)
+		{
+			String name = item.getStageNames().get(i);
+			String action = item.getStageActions().get(i);
+
+			if(name.equals("Script"))
+				action = item.getScriptLog();
+
+			RelativeLayout.LayoutParams params1 = new RelativeLayout.LayoutParams(
+				RelativeLayout.LayoutParams.FILL_PARENT,
+				RelativeLayout.LayoutParams.WRAP_CONTENT);
+			params1.addRule(RelativeLayout.BELOW, id - 1);
+
+			final TextView r1 = new TextView(getActivity());
+			r1.setLayoutParams(params1);
+			r1.setText(name);
+			r1.setId(id++);
+			r1.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16);
+			r1.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
+			r1.setPadding(0, 10, 0, 0);
+			details.addView(r1);
+
+			RelativeLayout.LayoutParams params2 = new RelativeLayout.LayoutParams(
+				RelativeLayout.LayoutParams.FILL_PARENT,
+				RelativeLayout.LayoutParams.WRAP_CONTENT);
+			params2.addRule(RelativeLayout.BELOW, id - 1);
+
+			final TextView r2 = new TextView(getActivity());
+			r2.setText(action);
+			r2.setId(id++);
+			r2.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
+			r2.setLayoutParams(params2);
+			r2.setPadding(8, 4, 0, 0);
+			details.addView(r2);
+		}
 	}
 
 	@Override protected void onContextMenuForItem(ContextMenu menu, HistoryItem item)

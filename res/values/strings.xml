@@ -28,9 +28,6 @@
 	<string name="queue_list_moveup">Move Up</string>
 	<string name="queue_list_movedown">Move Down</string>
 	<string name="queue_list_cancel">Cancel download</string>
-	<!--<string name="queue_list_change_priority">Change priority</string>
-	<string name="queue_list_change_script">Change script</string>
-	<string name="queue_list_change_category">Change category</string>-->
 
 	<string name="priority_force">Force</string>
 	<string name="priority_high">High</string>
@@ -44,7 +41,7 @@
 
 	<string name="pref_sabtab_category">SabTab</string>
 	<string name="pref_sabserver_title">SABnzbd server</string>
-	<string name="pref_sabserver_summary">Current : %s</string>
+	<string name="pref_sabserver_summary">The URL used to connect to the SABnzbd server</string>
 	<string name="pref_sabapikey_title">SABnzbd API key</string>
-	<string name="pref_sabapikey_summary">Current : %s</string>
+	<string name="pref_sabapikey_summary">The SABnzbd API key for authentication with the server</string>
 </resources>

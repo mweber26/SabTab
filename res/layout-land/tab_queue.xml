@@ -15,33 +15,7 @@
 			android:layout_weight="1"
 			android:layout_height="fill_parent"
 		>
-			<ListView
-				android:id="@+id/list"
-				android:layout_width="fill_parent"
-				android:layout_height="fill_parent"
-				android:background="?android:attr/detailsElementBackground"
-			/>
-
-			<ProgressBar
-				android:id="@+id/list_progress"
-				android:layout_centerInParent="true"
-				android:layout_width="wrap_content" 
-				android:layout_height="wrap_content"
-				android:maxWidth="50dp"
-				android:minWidth="50dp"
-				android:maxHeight="50dp"
-				android:minHeight="50dp"
-				android:indeterminate="true"
-			/>
-
-			<TextView
-				android:id="@+id/list_noitems"
-				android:layout_centerInParent="true"
-				android:layout_width="wrap_content" 
-				android:layout_height="wrap_content"
-				android:textStyle="bold"
-				android:text="@string/no_items"
-			/>
+			<include layout="@layout/queue_list" />
 		</RelativeLayout>
 
 		<RelativeLayout
@@ -52,79 +26,7 @@
 			android:id="@+id/details"
 			android:visibility="invisible"
 		>
-			<TableLayout
-				android:layout_width="fill_parent"
-				android:layout_height="fill_parent"
-				android:layout_margin="10dp"
-				android:stretchColumns="1"
-				android:shrinkColumns="1"
-			>
-				<TableRow>
-					<TextView android:text="ID" style="@style/QueueKey" />
-					<TextView android:id="@+id/details_id" style="@style/QueueValue" />
-				</TableRow>
-				<TableRow>
-					<TextView android:text="Name" style="@style/QueueKey" />
-					<TextView android:id="@+id/details_name" style="@style/QueueValue" />
-				</TableRow>
-				<TableRow>
-					<TextView android:text="Status" style="@style/QueueKey" />
-					<TextView android:id="@+id/details_status" style="@style/QueueValue" />
-				</TableRow>
-				<TableRow>
-					<TextView android:text="Time left" style="@style/QueueKey" />
-					<TextView android:id="@+id/details_time" style="@style/QueueValue" />
-				</TableRow>
-				<TableRow>
-					<TextView android:text="ETA" style="@style/QueueKey" />
-					<TextView android:id="@+id/details_eta" style="@style/QueueValue" />
-				</TableRow>
-				<TableRow>
-					<TextView android:text="Size left" style="@style/QueueKey" />
-					<TextView android:id="@+id/details_left" style="@style/QueueValue" />
-				</TableRow>
-				<TableRow>
-					<TextView android:text="Total size" style="@style/QueueKey" />
-					<TextView android:id="@+id/details_total" style="@style/QueueValue" />
-				</TableRow>
-				<TableRow>
-					<TextView android:text="Average Age" style="@style/QueueKey" />
-					<TextView android:id="@+id/details_age" style="@style/QueueValue" />
-				</TableRow>
-
-				<TableRow>
-					<TextView android:text="Priority" style="@style/QueueKey" />
-					<Spinner
-						android:id="@+id/queue_priority"
-						android:layout_height="wrap_content"
-						android:layout_width="wrap_content"
-					/>
-				</TableRow>
-				<TableRow>
-					<TextView android:text="Category" style="@style/QueueKey" />
-					<Spinner
-						android:id="@+id/queue_category"
-						android:layout_height="wrap_content"
-						android:layout_width="wrap_content"
-					/>
-				</TableRow>
-				<TableRow>
-					<TextView android:text="Unpack option" style="@style/QueueKey" />
-					<Spinner
-						android:id="@+id/queue_unpack"
-						android:layout_height="wrap_content"
-						android:layout_width="wrap_content"
-					/>
-				</TableRow>
-				<TableRow>
-					<TextView android:text="Post processing" style="@style/QueueKey" />
-					<Spinner
-						android:id="@+id/queue_script"
-						android:layout_height="wrap_content"
-						android:layout_width="wrap_content"
-					/>
-				</TableRow>
-			</TableLayout>
+			<include layout="@layout/queue_details" />
 		</RelativeLayout>
 	</LinearLayout>
 </LinearLayout>

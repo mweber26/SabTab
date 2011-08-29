@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merge xmlns:android="http://schemas.android.com/apk/res/android">
+	<RelativeLayout
+		android:layout_width="fill_parent"
+		android:layout_height="fill_parent"
+	>
+		<TableLayout
+			android:id="@+id/details_table"
+			android:layout_width="fill_parent"
+			android:layout_height="wrap_content"
+			android:stretchColumns="1"
+			android:shrinkColumns="1"
+		>
+			<TableRow>
+				<TextView android:text="ID" style="@style/QueueKey" />
+				<TextView android:id="@+id/details_id" style="@style/QueueValue" />
+			</TableRow>
+			<TableRow>
+				<TextView android:text="Name" style="@style/QueueKey" />
+				<TextView android:id="@+id/details_name" style="@style/QueueValue" />
+			</TableRow>
+			<TableRow>
+				<TextView android:text="Status" style="@style/QueueKey" />
+				<TextView android:id="@+id/details_status" style="@style/QueueValue" />
+			</TableRow>
+			<TableRow>
+				<TextView android:text="Size" style="@style/QueueKey" />
+				<TextView android:id="@+id/details_size" style="@style/QueueValue" />
+			</TableRow>
+			<TableRow>
+				<TextView android:text="Completed at" style="@style/QueueKey" />
+				<TextView android:id="@+id/details_completed" style="@style/QueueValue" />
+			</TableRow>
+		</TableLayout>
+
+		<RelativeLayout
+			android:id="@+id/details_list"
+			android:layout_width="fill_parent"
+			android:layout_height="fill_parent"
+			android:layout_below="@id/details_table"
+			android:layout_marginTop="4dp"
+		>
+		</RelativeLayout>
+	</RelativeLayout>
+</merge>

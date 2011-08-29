@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	android:orientation="vertical"
+	android:layout_width="fill_parent"
+	android:layout_height="fill_parent"
+	android:layout_margin="10dp"
+	>
+
+	<TextView
+		android:layout_width="fill_parent"
+		android:layout_height="wrap_content"
+		android:layout_marginBottom="8dp"
+		android:text="Warnings"
+		android:textSize="20sp"
+	/>
+
+	<View
+		android:layout_width="fill_parent"
+		android:layout_height="2dp"
+		android:layout_marginBottom="8dp"
+		android:background="#FF6595F9"
+	/>
+
+	<RelativeLayout
+		android:layout_width="fill_parent"
+		android:layout_height="fill_parent"
+	>
+		<ListView
+			android:id="@+id/list"
+			android:layout_width="fill_parent"
+			android:layout_height="fill_parent"
+		/>
+
+		<ProgressBar
+			android:id="@+id/list_progress"
+			android:layout_centerInParent="true"
+			android:layout_width="wrap_content" 
+			android:layout_height="wrap_content"
+			android:maxWidth="40dp"
+			android:minWidth="40dp"
+			android:maxHeight="40dp"
+			android:minHeight="40dp"
+			android:indeterminate="true"
+			android:visibility="invisible"
+		/>
+	</RelativeLayout>
+</LinearLayout>

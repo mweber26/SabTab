@@ -284,6 +284,8 @@ public class SabTabActivity extends Activity
 			{
 				ft.show(mFragment);
 			}
+
+			ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
 		}
 
 		public void onTabUnselected(ActionBar.Tab tab, FragmentTransaction ft)
