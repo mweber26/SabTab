@@ -36,7 +36,7 @@ public class TabHistoryFragment extends ListDetailsFragment<HistoryItem>
 	protected List<HistoryItem> fetchItems(SabControl sab)
 	{
 		Log.v(TAG, "fetch history items");
-		return sab.fetchHistory(0, 50);
+		return sab.fetchHistory(0, 100);
 	}
 
 	protected void updateItem(View row, HistoryItem item)

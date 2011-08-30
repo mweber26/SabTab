@@ -13,8 +13,8 @@ import android.util.Log;
 public class Queue
 {
 	private String status;
-	private double totalMB;
-	private double leftMB;
+	private String totalMB;
+	private String leftMB;
 	private String timeLeft;
 	private String version;
 	private int speedLimit;
@@ -29,8 +29,8 @@ public class Queue
 		status = queue.getString("status");
 		timeLeft = queue.getString("timeleft");
 		version = queue.getString("version");
-		totalMB = queue.getDouble("mb");
-		leftMB = queue.getDouble("mbleft");
+		totalMB = "" + queue.getDouble("mb");
+		leftMB = "" + queue.getDouble("mbleft");
 		numSlots = queue.getInt("noofslots");
 		currentSpeed = queue.getInt("kbpersec") * 1024;
 
@@ -78,6 +78,9 @@ public class Queue
 	public ArrayList<String> getCategories() { return categories; }
 
 	public String getDownloadSpeed() { return Helper.formatSize(currentSpeed) + "/sec"; }
+	public String getSizeTotal() { return totalMB + " MB"; }
+	public String getSizeLeft() { return leftMB + " MB"; }
+	public String getTimeLeft() { return timeLeft; }
 
 	public boolean isRunning() { return !status.equals("Paused"); }
 	public boolean isPaused() { return status.equals("Paused"); }

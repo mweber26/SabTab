@@ -6,7 +6,7 @@
 
 	<string name="status_idle">IDLE</string>
 	<string name="status_paused">PAUSED</string>
-	<string name="status_running">RUNNING : %s</string>
+	<string name="status_running">RUNNING</string>
 	<string name="status_connecting">CONNECTING</string>
 	<string name="status_error">ERROR</string>
 
@@ -23,7 +23,7 @@
 	<string name="history_list_retry">Retry</string>
 	<string name="history_list_delete">Delete</string>
 
-	<string name="delete_confirm">Are you sure you want to cancel the download and delete the downloaded  parts?</string>
+	<string name="delete_confirm">Are you sure you want to cancel the download and delete the downloaded parts?</string>
 
 	<string name="queue_list_pause">Pause</string>
 	<string name="queue_list_resume">Resume</string>
@@ -54,4 +54,7 @@
 	<string name="speed_title">Change download speed limit</string>
 	<string name="speed_unlimited">Unlimited</string>
 	<string name="speed_custom">Custom speed</string>
+
+	<string name="queue_remains">%1$s / %2$s remaining</string>
+	<string name="queue_timeleft">%1$s left @ %2$s</string>
 </resources>

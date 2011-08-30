@@ -39,6 +39,8 @@ public class SabTabActivity extends Activity
 	private MenuItem resumeMenu;
 	private MenuItem speedMenu;
 	private TextView statusText;
+	private TextView remainsText;
+	private TextView timeleftText;
 	private SabControl sab;
 	private Queue queue;
 	private Handler handler = new Handler(); 
@@ -54,6 +56,8 @@ public class SabTabActivity extends Activity
 		//create the activity view
 		setContentView(R.layout.main);
 		statusText = (TextView)findViewById(R.id.status);
+		remainsText = (TextView)findViewById(R.id.remaining);
+		timeleftText = (TextView)findViewById(R.id.time_left);
 
 		//setup the sab controller with a refresher
 		this.sab = new SabControl(getApplicationContext(), new SabControlEvent() {
@@ -78,6 +82,9 @@ public class SabTabActivity extends Activity
 			Log.v(TAG, intent.getData().getPath());
 			sab.uploadFile(intent.getData().getPath());
 		}
+
+		ActionBar actionBar = getActionBar();
+		actionBar.setTitle("");
 	}
 
 	@Override protected void onPause()
@@ -193,26 +200,43 @@ public class SabTabActivity extends Activity
 		if(sab.getLastError() != null && sab.getLastError().length() > 0)
 		{
 			statusText.setText(getString(R.string.status_error));
+			remainsText.setVisibility(View.GONE);
+			timeleftText.setVisibility(View.GONE);
 			speedMenu.setVisible(false);
 			resumeMenu.setVisible(false);
 			pauseMenu.setVisible(false);
 		}
 		else if(queue != null)
 		{
+			timeleftText.setVisibility(View.VISIBLE);
+
 			if(queue.isPaused())
+			{
+				timeleftText.setText("");
 				statusText.setText(getString(R.string.status_paused));
+			}
 			else if(queue.isIdle())
+			{
+				timeleftText.setText("");
 				statusText.setText(getString(R.string.status_idle));
+			}
 			else
+			{
+				timeleftText.setText(String.format(getString(R.string.queue_timeleft),
+					queue.getTimeLeft(), queue.getDownloadSpeed()));
 				statusText.setText(String.format(getString(R.string.status_running),
 					queue.getDownloadSpeed()));
+			}
 
 			speedMenu.setVisible(true);
-
 			if(queue.getSpeedLimit() == 0)
 				speedMenu.setTitle(getString(R.string.speed_unlimited));
 			else
 				speedMenu.setTitle(queue.getSpeedLimitText());
+
+			remainsText.setVisibility(View.VISIBLE);
+			remainsText.setText(String.format(getString(R.string.queue_remains),
+				queue.getSizeLeft(), queue.getSizeTotal()));
 
 			if(queue.isPaused())
 			{
@@ -227,10 +251,12 @@ public class SabTabActivity extends Activity
 		}
 		else
 		{
+			statusText.setText(getString(R.string.status_connecting));
+			remainsText.setVisibility(View.GONE);
+			timeleftText.setVisibility(View.GONE);
 			speedMenu.setVisible(false);
 			resumeMenu.setVisible(false);
 			pauseMenu.setVisible(false);
-			statusText.setText(getString(R.string.status_connecting));
 		}
 	}
 
