@@ -27,6 +27,9 @@ public class HistoryItem implements SabEntity
 
 	public HistoryItem(JSONObject item) throws JSONException
 	{
+		stageNames = new ArrayList<String>();
+		stageActions = new ArrayList<String>();
+
 		id = item.getString("nzo_id");
 		failMessage = item.getString("fail_message");
 		script = item.getString("script");
@@ -39,18 +42,20 @@ public class HistoryItem implements SabEntity
 		postProcTime = item.getInt("postproc_time");
 		completedAt = new Date(item.getLong("completed") * 1000);
 
-		stageNames = new ArrayList<String>();
-		stageActions = new ArrayList<String>();
-		JSONArray slotArray = item.getJSONArray("stage_log");
-		for(int i = 0; i < slotArray.length(); i++)
+		//stage_log can be string for failed items
+		JSONArray slotArray = item.optJSONArray("stage_log");
+		if(slotArray != null)
 		{
-			JSONObject slot = slotArray.getJSONObject(i);
-			JSONArray actionArray = slot.getJSONArray("actions");
-			stageNames.add(slot.getString("name"));
-			String action = "";
-			for(int j = 0; j < actionArray.length(); j++)
-				action = action + actionArray.getString(j) + "\r\n";
-			stageActions.add(action.trim());
+			for(int i = 0; i < slotArray.length(); i++)
+			{
+				JSONObject slot = slotArray.getJSONObject(i);
+				JSONArray actionArray = slot.getJSONArray("actions");
+				stageNames.add(slot.getString("name"));
+				String action = "";
+				for(int j = 0; j < actionArray.length(); j++)
+					action = action + actionArray.getString(j) + "\r\n";
+				stageActions.add(action.trim());
+			}
 		}
 	}
 
@@ -62,8 +67,15 @@ public class HistoryItem implements SabEntity
 	public String getScriptLog() { return scriptLog; }
 	public String getStatus() { return status; }
 	public String getSize() { return Helper.formatSize(bytes); }
-	public String getSpeed() { return Helper.formatSize(bytes / downloadTime) + "/sec"; }
+	public String getSpeed()
+	{
+		if(downloadTime <= 0)
+			return "N/A";
+		else
+			return Helper.formatSize(bytes / downloadTime) + "/sec";
+	}
 	public String getCompleted() { return DateFormat.getDateTimeInstance().format(completedAt); }
+	public String getFailedMessage() { return failMessage; }
 
 	public String getTime()
 	{

@@ -18,6 +18,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.DialogInterface;
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
@@ -67,9 +69,6 @@ public class SabTabActivity extends Activity
 			}
       });
 
-		//start the update timer
-		handler.post(updateQueueTask);
-
 		initTabs();
 		if(savedInstanceState != null)
 			loadState(savedInstanceState);
@@ -85,6 +84,15 @@ public class SabTabActivity extends Activity
 
 		ActionBar actionBar = getActionBar();
 		actionBar.setTitle("");
+
+		//start the update timer
+		handler.post(updateQueueTask);
+
+		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+		String url = prefs.getString("sabserver", "");
+		String apikey = prefs.getString("sabapikey", "");
+		if(url.length() == 0 || apikey.length() == 0)
+			startActivity(new Intent(this, SettingsActivity.class));
 	}
 
 	@Override protected void onPause()
@@ -162,6 +170,8 @@ public class SabTabActivity extends Activity
 
 	@Override public boolean onCreateOptionsMenu(Menu menu)
 	{
+		Log.v(TAG, "onCreateOptionsMenu() start");
+
 		MenuInflater inflater = getMenuInflater();
 		inflater.inflate(R.menu.main_menu, menu);
 
@@ -190,6 +200,7 @@ public class SabTabActivity extends Activity
 		});
 
 		updateState();
+		Log.v(TAG, "onCreateOptionsMenu() done");
 		return true;
 	}
 
@@ -202,9 +213,12 @@ public class SabTabActivity extends Activity
 			statusText.setText(getString(R.string.status_error));
 			remainsText.setVisibility(View.GONE);
 			timeleftText.setVisibility(View.GONE);
-			speedMenu.setVisible(false);
-			resumeMenu.setVisible(false);
-			pauseMenu.setVisible(false);
+
+			//with no server config we get an error immediatly which means we don't have
+			//	a menu yet
+			if(speedMenu != null) speedMenu.setVisible(false);
+			if(resumeMenu != null) resumeMenu.setVisible(false);
+			if(pauseMenu != null) pauseMenu.setVisible(false);
 		}
 		else if(queue != null)
 		{

@@ -44,6 +44,7 @@ public abstract class ListDetailsFragment<T extends SabEntity> extends Fragment
 	private ItemAdapter listAdapter;
 	private ProgressBar listProgress;
 	private TextView listNoItems;
+	private TextView listError;
 	private View detailsFrame;
 	private String restoreSelection;
 
@@ -53,7 +54,7 @@ public abstract class ListDetailsFragment<T extends SabEntity> extends Fragment
 
 	protected abstract void updateDetails(View v, T item);
 	protected abstract void updateItem(View v, T item);
-	protected abstract List<T> fetchItems(SabControl sab);
+	protected abstract List<T> fetchItems(SabControl sab) throws java.io.IOException;
 
 	protected SabControl getSab()
 	{
@@ -187,9 +188,11 @@ public abstract class ListDetailsFragment<T extends SabEntity> extends Fragment
 		listView = (ListView)v.findViewById(R.id.list);
 		listProgress = (ProgressBar)v.findViewById(R.id.list_progress);
 		listNoItems = (TextView)v.findViewById(R.id.list_noitems);
+		listError = (TextView)v.findViewById(R.id.list_error);
 
 		listProgress.setVisibility(View.INVISIBLE);
 		listNoItems.setVisibility(View.VISIBLE);
+		listError.setVisibility(View.INVISIBLE);
 
 		listView.setAdapter(listAdapter);
 		listView.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
@@ -333,13 +336,21 @@ public abstract class ListDetailsFragment<T extends SabEntity> extends Fragment
 	{
 		protected List<T> doInBackground(Void... unused)
 		{
-			return fetchItems(sab);
+			try
+			{
+				return fetchItems(sab);
+			}
+			catch(java.io.IOException e)
+			{
+				return null;
+			}
 		}
 
 		protected void onPreExecute()
 		{
 			listProgress.setVisibility(View.VISIBLE);
 			listNoItems.setVisibility(View.INVISIBLE);
+			listError.setVisibility(View.INVISIBLE);
 		}
 
 		protected void onPostExecute(List<T> result)
@@ -365,16 +376,27 @@ public abstract class ListDetailsFragment<T extends SabEntity> extends Fragment
 					restoreSelection = item.getId();
 					handler.postDelayed(updateSelectedIdTask, 10);
 				}
+
+				listError.setVisibility(View.INVISIBLE);
+
+				//no items
+				if(listAdapter.getCount() == 0)
+					listNoItems.setVisibility(View.VISIBLE);
+				else
+					listNoItems.setVisibility(View.INVISIBLE);
+			}
+			else
+			{
+				//only display the error if we don't have any results
+				if(listAdapter.getCount() == 0)
+				{
+					listNoItems.setVisibility(View.INVISIBLE);
+					listError.setVisibility(View.VISIBLE);
+				}
 			}
 
 			//hide the spinner
 			listProgress.setVisibility(View.INVISIBLE);
-
-			//no items
-			if(listAdapter.getCount() == 0)
-				listNoItems.setVisibility(View.VISIBLE);
-			else
-				listNoItems.setVisibility(View.INVISIBLE);
 		}
 	}
 }

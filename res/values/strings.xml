@@ -2,7 +2,8 @@
 <resources>
 	<string name="app_name">SABTab</string>
 
-	<string name="no_items">No items</string>
+	<string name="no_items">No items found</string>
+	<string name="list_error">Error downloading items</string>
 
 	<string name="status_idle">IDLE</string>
 	<string name="status_paused">PAUSED</string>

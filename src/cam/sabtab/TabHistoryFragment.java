@@ -67,43 +67,64 @@ public class TabHistoryFragment extends ListDetailsFragment<HistoryItem>
 		completed.setText(item.getCompleted());
 
 		details.removeAllViews();
-
 		int id = 1;
-		for(int i = 0; i < item.getStageNames().size(); i++)
+
+		if(item.getStatus().equals("Failed"))
 		{
-			String name = item.getStageNames().get(i);
-			String action = item.getStageActions().get(i);
+			String msg = item.getFailedMessage();
 
-			if(name.equals("Script"))
-				action = item.getScriptLog();
+			//we don't need the link
+			int index = msg.indexOf(", <a href");
+			if(index != -1)
+				msg = msg.substring(0, index);
 
-			RelativeLayout.LayoutParams params1 = new RelativeLayout.LayoutParams(
-				RelativeLayout.LayoutParams.FILL_PARENT,
-				RelativeLayout.LayoutParams.WRAP_CONTENT);
-			params1.addRule(RelativeLayout.BELOW, id - 1);
-
-			final TextView r1 = new TextView(getActivity());
-			r1.setLayoutParams(params1);
-			r1.setText(name);
-			r1.setId(id++);
-			r1.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16);
-			r1.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
-			r1.setPadding(0, 10, 0, 0);
-			details.addView(r1);
-
-			RelativeLayout.LayoutParams params2 = new RelativeLayout.LayoutParams(
-				RelativeLayout.LayoutParams.FILL_PARENT,
-				RelativeLayout.LayoutParams.WRAP_CONTENT);
-			params2.addRule(RelativeLayout.BELOW, id - 1);
-
-			final TextView r2 = new TextView(getActivity());
-			r2.setText(action);
-			r2.setId(id++);
-			r2.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
-			r2.setLayoutParams(params2);
-			r2.setPadding(8, 4, 0, 0);
-			details.addView(r2);
+			id = addDetailsSection(details, "Error", msg, id);
 		}
+		else
+		{
+			for(int i = 0; i < item.getStageNames().size(); i++)
+			{
+				String name = item.getStageNames().get(i);
+				String action = item.getStageActions().get(i);
+
+				if(name.equals("Script"))
+					action = item.getScriptLog();
+
+				id = addDetailsSection(details, name, action, id);
+			}
+		}
+	}
+
+	private int addDetailsSection(RelativeLayout details, String title, String text, int id)
+	{
+		RelativeLayout.LayoutParams params1 = new RelativeLayout.LayoutParams(
+			RelativeLayout.LayoutParams.FILL_PARENT,
+			RelativeLayout.LayoutParams.WRAP_CONTENT);
+		params1.addRule(RelativeLayout.BELOW, id - 1);
+
+		final TextView r1 = new TextView(getActivity());
+		r1.setLayoutParams(params1);
+		r1.setText(title);
+		r1.setId(id++);
+		r1.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16);
+		r1.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
+		r1.setPadding(0, 10, 0, 0);
+		details.addView(r1);
+
+		RelativeLayout.LayoutParams params2 = new RelativeLayout.LayoutParams(
+			RelativeLayout.LayoutParams.FILL_PARENT,
+			RelativeLayout.LayoutParams.WRAP_CONTENT);
+		params2.addRule(RelativeLayout.BELOW, id - 1);
+
+		final TextView r2 = new TextView(getActivity());
+		r2.setText(text);
+		r2.setId(id++);
+		r2.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
+		r2.setLayoutParams(params2);
+		r2.setPadding(8, 4, 0, 0);
+		details.addView(r2);
+
+		return id;
 	}
 
 	@Override protected void onContextMenuForItem(ContextMenu menu, HistoryItem item)
